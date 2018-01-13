@@ -1,4 +1,8 @@
-# Main file
+""" Bundle segmentation with Rectangular Linear Assignment Problem.
+
+	See Sharmin et al., 'White Matter Tract Segmentation as Multiple 
+	Linear Assignment Problems', Fronts. Neurosci., 2017.
+"""
 
 import os
 import sys
@@ -7,41 +11,11 @@ import os.path
 import nibabel as nib
 import numpy as np
 from nibabel.streamlines import load
-#from dipy.segment.clustering import QuickBundles
-#from dipy.align.streamlinear import StreamlineLinearRegistration
-#from dipy.tracking.streamline import set_number_of_points
 from slr_registration import tractograms_slr
 from dissimilarity import compute_dissimilarity, dissimilarity
 from dipy.tracking.distances import bundles_distances_mam
 from sklearn.neighbors import KDTree
-
-
-"""
-1) SLR
-2) LAP single subject
-3) LAP multi-subjects
-"""
-
-## One subject
-
-
-# SLR: 
-# Given two subjects-id, return affine tranformation
-# load two tractograms
-# calculate and return affine
-
-# Apply transformation
-# transform the example bundle with the affine
-
-
-# Intermediate step:
-# calculate kdt and dissimilarity of target tractogram
-# calculate dissimilarity of aligned source tract with the prototypes of target tractogram
-
-
-# RLAP
-# Given: kdt, k, dm_source_tract, source_tract_aligned, tractogram, distance
-# return estimated bundle
+from dipy.viz import fvtk
 
 
 def compute_kdtree_and_dr_tractogram(tractogram, num_prototypes=None):
@@ -49,13 +23,11 @@ def compute_kdtree_and_dr_tractogram(tractogram, num_prototypes=None):
     build the kd-tree.
     """
     tractogram = np.array(tractogram)
-   
     print("Computing dissimilarity matrices")
     if num_prototypes is None:
         num_prototypes = 40
         print("Using %s prototypes as in Olivetti et al. 2012"
               % num_prototypes)
-
     print("Using %s prototypes" % num_prototypes)
     dm_tractogram, prototype_idx = compute_dissimilarity(tractogram,
                                                          num_prototypes=num_prototypes,
@@ -63,12 +35,9 @@ def compute_kdtree_and_dr_tractogram(tractogram, num_prototypes=None):
                                                          prototype_policy='sff',
                                                          n_jobs=-1,
                                                          verbose=False)
-    
     prototypes = tractogram[prototype_idx]
-    
     print("Building the KD-tree of tractogram")
     kdt = KDTree(dm_tractogram)
-    
     return kdt, prototypes    
 
 
@@ -85,6 +54,21 @@ def RLAP(kdt, k, dm_source_tract, source_tract, tractogram, distance):
     return superset[assignment]
 
 
+def show_both_bundles(bundles, colors=None, show=False, fname=None):
+	ren = fvtk.ren()
+	ren.SetBackground(1., 1, 1)
+	for (i, bundle) in enumerate(bundles):
+		color = colors[i]
+		lines = fvtk.streamtube(bundle, color, linewidth=0.3)
+		lines.RotateX(-90)
+		lines.RotateZ(90)
+		fvtk.add(ren, lines)
+	if show:
+		fvtk.show(ren)
+	if fname is not None:
+		sleep(1)
+		fvtk.record(ren, n_frames=1, out_path=fname,size=(3000,3000))
+		fvtk.show(ren)
 
 
 
@@ -132,5 +116,20 @@ if __name__ == '__main__':
                                                              prototype_policy='sff',
                                                              n_jobs=-1,
                                                              verbose=False)
+
+	print("Segmentation as Rectangular linear Assignment Problem (RLAP).")
+	k = 200
+	distance = bundles_distances_mam
+	estimated_target_bundle = RLAP(kdt, k, dm_example_bundle, example_bundle, target_tractogram, distance)
+
+	# Visualization
+	print("Loading true target bundle...")
+	true_target_bundle_filename = '%s/wmql_FNALW/sub-%s/sub-%s_var-FNALW_%s.trk' %(src_dir, args.target, args.target, args.bundle)
+	print("True target bundle filename: %s" %true_target_bundle_filename)
+	true_target_bundle = nib.streamlines.load(true_target_bundle_filename)
+	true_target_bundle = true_target_bundle.streamlines	
+
+	show_both_bundles([true_target_bundle, estimated_target_bundle],
+                       colors=[fvtk.colors.blue, fvtk.colors.red]) 
 
 	sys.exit()    
