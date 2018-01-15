@@ -1,8 +1,8 @@
 """ SLR (Streamline Linear Registration) of two tractograms.
     
-    See Garyfallidis et. al, “Robust and efficient linear registration 
-    of white-matter fascicles in the space of streamlines”, 
-    Neuroimage, 117:124-140, 2015.
+	See Garyfallidis et. al, 'Robust and efficient linear registration 
+	of white-matter fascicles in the space of streamlines', 
+	Neuroimage, 117:124-140, 2015.
 """
 
 import os
@@ -19,8 +19,8 @@ from dipy.tracking.streamline import set_number_of_points
 
 def tractograms_slr(target_subject_id, source_subject_id, src_dir):
   
-	target_tractogram_filename = '%s/sub-%s/sub-%s_var-FNAL_tract.trk' %(src_dir, target_subject_id, target_subject_id)  
-	source_tractogram_filename = '%s/sub-%s/sub-%s_var-FNAL_tract.trk' %(src_dir, source_subject_id, source_subject_id)
+	target_tractogram_filename = '%s/deterministic_tracking_dipy_FNAL/sub-%s/sub-%s_var-FNAL_tract.trk' %(src_dir, target_subject_id, target_subject_id)  
+	source_tractogram_filename = '%s/deterministic_tracking_dipy_FNAL/sub-%s/sub-%s_var-FNAL_tract.trk' %(src_dir, source_subject_id, source_subject_id)
 	print("Target tractogram filename: %s" %target_tractogram_filename)
 	print("Source tractogram filename: %s" %source_tractogram_filename)
 
@@ -58,7 +58,7 @@ def tractograms_slr(target_subject_id, source_subject_id, src_dir):
 	print("Applying the transformation...")
 	source_tractogram_aligned = srm.transform(source_tractogram)
 
-	return affine, source_tractogram_aligned
+	return affine, srm, source_tractogram_aligned
 
 
 if __name__ == '__main__':
@@ -66,7 +66,7 @@ if __name__ == '__main__':
 	# Setting the location of the repository
 	script_src = os.path.basename(sys.argv[0]).strip('.py')
 	script_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
-	src_dir = os.path.abspath(os.path.join(script_dir, '../data/derivatives/deterministic_tracking_dipy_FNAL'))
+	src_dir = os.path.abspath(os.path.join(script_dir, 'data/HCP3/derivatives'))
 	#out_dir = os.path.join(src_dir, 'source_tractogram_aligned')
 	#if not os.path.exists(out_dir):
 	#    os.mkdir(out_dir)   
@@ -79,7 +79,7 @@ if __name__ == '__main__':
 	                    
 	args = parser.parse_args()
 
-	affine, source_tractogram_aligned = tractograms_slr(args.target, args.source, src_dir)
+	affine, srm, source_tractogram_aligned = tractograms_slr(args.target, args.source, src_dir)
 
 	sys.exit()
 

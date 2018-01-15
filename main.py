@@ -17,6 +17,13 @@ from dipy.tracking.distances import bundles_distances_mam
 from sklearn.neighbors import KDTree
 from dipy.viz import fvtk
 
+try:
+    from linear_assignment import LinearAssignment
+except ImportError:
+    print("WARNING: Cythonized LAPJV not available. Falling back to Python.")
+    print("WARNING: See README.txt")
+    from linear_assignment_numpy import LinearAssignment
+
 
 def compute_kdtree_and_dr_tractogram(tractogram, num_prototypes=None):
     """Compute the dissimilarity representation of the target tractogram and 
