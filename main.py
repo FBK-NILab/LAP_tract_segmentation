@@ -51,6 +51,7 @@ def compute_kdtree_and_dr_tractogram(tractogram, num_prototypes=None):
 def RLAP(kdt, k, dm_source_tract, source_tract, tractogram, distance):
     """Code for Rectangular Linear Assignment Problem.
     """
+    tractogram = np.array(tractogram)
     D, I = kdt.query(dm_source_tract, k=k)
     superset = np.unique(I.flat)
     print("Computing the cost matrix (%s x %s) for RLAP " % (len(source_tract),
