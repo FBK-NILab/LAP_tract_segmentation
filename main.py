@@ -79,7 +79,7 @@ def show_both_bundles(bundles, colors=None, show=True, fname=None):
 		fvtk.show(ren)
 
 
-def show_tract(estimated_target_tract, target_tract):
+def show_tracts(estimated_target_tract, target_tract):
 	"""Visualization of the tracts.
 	"""
 	ren = fvtk.ren()
@@ -129,17 +129,12 @@ if __name__ == '__main__':
 
 	print("Compute the dissimilarity of the aligned example bundle with the prototypes of target tractogram.")
 	example_bundle_aligned=np.array(example_bundle_aligned, dtype=np.object)
-	dm_example_bundle, prototype_idx = compute_dissimilarity(example_bundle_aligned,
-                                                             num_prototypes=40,
-                                                             distance=bundles_distances_mam,
-                                                             prototype_policy='sff',
-                                                             n_jobs=-1,
-                                                             verbose=False)
+	dm_example_bundle_aligned = bundles_distances_mam(example_bundle_aligned, prototypes)
 
 	print("Segmentation as Rectangular linear Assignment Problem (RLAP).")
-	k = 200
+	k = 500
 	distance = bundles_distances_mam
-	estimated_target_bundle_idx = RLAP(kdt, k, dm_example_bundle, example_bundle, target_tractogram, distance)
+	estimated_target_bundle_idx = RLAP(kdt, k, dm_example_bundle_aligned, example_bundle_aligned, target_tractogram, distance)
 	estimated_target_bundle = target_tractogram[estimated_target_bundle_idx]
 
 	# Visualization
@@ -153,6 +148,6 @@ if __name__ == '__main__':
 	#	              colors=[fvtk.colors.blue, fvtk.colors.red],
 	#	              fname='LAP_tract_%s.png' %args.bundle) 
 
-	#show_tract(true_target_bundle, estimated_target_bundle)
+	show_tracts(estimated_target_bundle, true_target_bundle)
 
 	#sys.exit()    
