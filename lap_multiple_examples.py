@@ -21,46 +21,61 @@ except ImportError:
     joblib_available = False
 
 
-def RLAP(kdt, k, dm_source_tract, source_tract, tractogram, distance):
-    """Code for Rectangular Linear Assignment Problem.
+def ranking_schema(superset_estimated_target_tract_idx, superset_estimated_target_tract_cost):
+    """ Rank all the extracted streamlines estimated by the LAP with different examples (superset)   
+    accoring to the number of times it selected and the total cost
     """
-    tractogram = np.array(tractogram, dtype=np.object)
-    D, I = kdt.query(dm_source_tract, k=k)
-    superset = np.unique(I.flat)
-    print("Computing the cost matrix (%s x %s) for RLAP... " % (len(source_tract),
-                                                             len(superset)))
-    cost_matrix = dissimilarity(source_tract, tractogram[superset], distance)
-    print("Computing RLAP with LAPJV...")
-    assignment = LinearAssignment(cost_matrix).solution
-    estimated_bundle_idx = superset[assignment]
-    min_cost_values = cost_matrix[np.arange(len(cost_matrix)), assignment]
-
-    return estimated_bundle_idx, min_cost_values
+    idxs = np.unique(superset_estimated_target_tract_idx)
+    how_many_times_selected = np.array([(superset_estimated_target_tract_idx == idx).sum() for idx in idxs])
+    how_much_cost = np.array([((superset_estimated_target_tract_idx == idx)*superset_estimated_target_tract_cost).sum() for idx in idxs])
+    ranking = np.argsort(how_many_times_selected)[::-1]
+    tmp = np.unique(how_many_times_selected)[::-1]
+    for i in tmp:
+        tmp1 = (how_many_times_selected == i)
+        tmp2 = np.where(tmp1)[0]
+        if tmp2.size > 1:
+            tmp3 = np.argsort(how_much_cost[tmp2])
+            ranking[how_many_times_selected[ranking]==i] = tmp2[tmp3]
+ 
+    return idxs[ranking]
 
 
 def lap_multiple_examples(moving_tractograms_dir, static_tractogram, ex_dir, aff_dict, out_trk):
 	"""Code for LAP from multiple examples.
 	"""
-	moving_tractograms_directory = os.listdir(moving_tractograms_dir)
-	moving_tractograms_directory.sort()
-	examples_directory = os.listdir(ex_dir)
-	examples_directory.sort()
+	moving_tractograms = os.listdir(moving_tractograms_dir)
+	moving_tractograms.sort()
+	examples = os.listdir(ex_dir)
+	examples.sort()
 
-	nt = len(moving_tractograms_directory)
-	ne = len(examples_directory)
+	nt = len(moving_tractograms)
+	ne = len(examples)
 
 	if nt != ne:
 		print("Error: number of moving tractograms differs from number of example bundles.")
 		sys.exit()
 	else:	
+		result_lap = []
 		for i in range(nt):
-			moving_tractogram = '%s/%s' %(moving_tractograms_dir, moving_tractograms_directory[i])
-			example = '%s/%s' %(ex_dir, examples_directory[i])
-
-			result_lap = lap_single_example(moving_tractogram, static_tractogram, example, aff_dict)
-
+			moving_tractogram = '%s/%s' %(moving_tractograms_dir, moving_tractograms[i])
+			example = '%s/%s' %(ex_dir, examples[i])
+			tmp = np.array([lap_single_example(moving_tractogram, static_tractogram, example, aff_dict)])
+			result_lap.append(tmp)
 		return result_lap
-		#return estimated_bundle
+
+		result_lap = np.array(result_lap)
+		estimated_bundle_idx = np.hstack(result_lap[:,0,0])
+		min_cost_values = np.hstack(result_lap[:,0,1])
+		example_bundle_len_med = np.median(np.hstack(result_lap[:,0,2]))
+
+		print("Ranking the estimated streamlines...")
+		estimated_bundle_idx_ranked = ranking_schema(estimated_bundle_idx, min_cost_values)                                                       
+
+		print("Extracting the estimated bundle...")
+		estimated_bundle_idx_ranked_med = estimated_bundle_idx_ranked[0:int(example_bundle_len_med)]
+		static_tractogram = nib.streamlines.load(static_tractogram)
+		static_tractogram = static_tractogram.streamlines
+		estimated_bundle = static_tractogram[estimated_bundle_idx_ranked_med]
 
 
 if __name__ == '__main__':

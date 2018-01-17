@@ -13,6 +13,7 @@ import nibabel as nib
 import numpy as np
 import pickle
 from os.path import isfile
+import ntpath
 from nibabel.streamlines import load
 from dipy.segment.clustering import QuickBundles
 from dipy.align.streamlinear import StreamlineLinearRegistration
@@ -29,10 +30,16 @@ def tractograms_slr(moving_tractogram, static_tractogram, aff_dict):
 		print("Creating a new table which will be saved in %s" % table_filename)
 		table = {}
 
-	key = tuple([(moving_tractogram, static_tractogram)])[0]
+	#key = tuple([(moving_tractogram, static_tractogram)])[0]
+	moving_tractogram_basename = ntpath.basename(moving_tractogram)
+	static_tractogram_basename = ntpath.basename(static_tractogram)
+	key = tuple([(moving_tractogram_basename, static_tractogram_basename)])[0]
+	#print(other_key)
+
 	if table.has_key(key):
 		print("Affine already exist in %s" % table_filename)
-		affine = table[moving_tractogram, static_tractogram].items()[0][1]
+		affine = table[moving_tractogram_basename, static_tractogram_basename].items()[0][1]
+		#print("not already computed")
 	else:	
 		print("Loading tractograms...")
 		moving_tractogram = nib.streamlines.load(moving_tractogram)
@@ -66,7 +73,7 @@ def tractograms_slr(moving_tractogram, static_tractogram, aff_dict):
 		print('%s' %affine)
 
 		print("Fill the dictionary.")
-		table[args.moving, args.static] = {'affine': affine}
+		table[moving_tractogram_basename, static_tractogram_basename] = {'affine': affine}
 		pickle.dump(table, open(table_filename, 'w'), protocol=pickle.HIGHEST_PROTOCOL)
 
 	return affine
@@ -84,5 +91,5 @@ if __name__ == '__main__':
 	args = parser.parse_args()
 
 	affine = tractograms_slr(args.moving, args.static, args.out)	
-                                
+	                            
 	sys.exit()    
