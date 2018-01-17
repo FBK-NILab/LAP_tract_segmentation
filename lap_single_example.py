@@ -11,7 +11,7 @@ import os.path
 import nibabel as nib
 import numpy as np
 from nibabel.streamlines import load
-from slr_registration import tractograms_slr
+from tractograms_slr import tractograms_slr
 from dipy.tracking.streamline import apply_affine
 from dissimilarity import compute_dissimilarity, dissimilarity
 from dipy.tracking.distances import bundles_distances_mam
@@ -123,8 +123,7 @@ if __name__ == '__main__':
 	parser.add_argument('-ex', nargs='?',  const=1, default='',
 	                    help='The example bundle filename')
 	parser.add_argument('-aff', nargs='?',  const=1, default='',
-	                    help='The input affine table filename')
-	                    
+	                    help='The input affine table filename')            
 	args = parser.parse_args()
 
 	result_lap = lap_single_example(args.moving, args.static, args.ex, args.aff)
