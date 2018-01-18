@@ -22,8 +22,8 @@ except ImportError:
 
 
 def ranking_schema(superset_estimated_target_tract_idx, superset_estimated_target_tract_cost):
-    """ Rank all the extracted streamlines estimated by the LAP with different examples (superset)   
-    accoring to the number of times it selected and the total cost
+    """ Rank all the extracted streamlines estimated by the LAP with multiple examples   
+    according to the number of times that they were selected and the total cost.
     """
     idxs = np.unique(superset_estimated_target_tract_idx)
     how_many_times_selected = np.array([(superset_estimated_target_tract_idx == idx).sum() for idx in idxs])
@@ -61,7 +61,6 @@ def lap_multiple_examples(moving_tractograms_dir, static_tractogram, ex_dir, aff
 			example = '%s/%s' %(ex_dir, examples[i])
 			tmp = np.array([lap_single_example(moving_tractogram, static_tractogram, example, aff_dict)])
 			result_lap.append(tmp)
-		return result_lap
 
 		result_lap = np.array(result_lap)
 		estimated_bundle_idx = np.hstack(result_lap[:,0,0])
@@ -74,8 +73,26 @@ def lap_multiple_examples(moving_tractograms_dir, static_tractogram, ex_dir, aff
 		print("Extracting the estimated bundle...")
 		estimated_bundle_idx_ranked_med = estimated_bundle_idx_ranked[0:int(example_bundle_len_med)]
 		static_tractogram = nib.streamlines.load(static_tractogram)
+		aff_vox_to_ras = static_tractogram.affine
+		voxel_sizes = static_tractogram.header['voxel_sizes']
+		dimensions = static_tractogram.header['dimensions']
 		static_tractogram = static_tractogram.streamlines
 		estimated_bundle = static_tractogram[estimated_bundle_idx_ranked_med]
+
+		# Creating header
+		hdr = nib.streamlines.trk.TrkFile.create_empty_header()
+		hdr['voxel_sizes'] = voxel_sizes
+		hdr['voxel_order'] = 'LAS'
+		hdr['dimensions'] = dimensions
+		hdr['voxel_to_rasmm'] = aff_vox_to_ras 
+
+		# Saving tractogram
+		t = nib.streamlines.tractogram.Tractogram(estimated_bundle, affine_to_rasmm=np.eye(4))
+		print("Saving tractogram in %s" % out_trk)
+		nib.streamlines.save(t, out_trk , header=hdr)
+		print("Tractogram saved in %s" % out_trk)
+
+		return estimated_bundle
 
 
 if __name__ == '__main__':

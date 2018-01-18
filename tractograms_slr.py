@@ -30,16 +30,13 @@ def tractograms_slr(moving_tractogram, static_tractogram, aff_dict):
 		print("Creating a new table which will be saved in %s" % table_filename)
 		table = {}
 
-	#key = tuple([(moving_tractogram, static_tractogram)])[0]
 	moving_tractogram_basename = ntpath.basename(moving_tractogram)
 	static_tractogram_basename = ntpath.basename(static_tractogram)
 	key = tuple([(moving_tractogram_basename, static_tractogram_basename)])[0]
-	#print(other_key)
 
 	if table.has_key(key):
 		print("Affine already exist in %s" % table_filename)
 		affine = table[moving_tractogram_basename, static_tractogram_basename].items()[0][1]
-		#print("not already computed")
 	else:	
 		print("Loading tractograms...")
 		moving_tractogram = nib.streamlines.load(moving_tractogram)

@@ -106,7 +106,7 @@ def lap_single_example(moving_tractogram, static_tractogram, example, aff_dict):
 	estimated_bundle = static_tractogram[estimated_bundle_idx]
 
 	# Visualization
-	show_tracts(estimated_bundle, example_bundle)
+	#show_tracts(estimated_bundle, example_bundle)
 
 	return estimated_bundle_idx, min_cost_values, len(example_bundle)
 
