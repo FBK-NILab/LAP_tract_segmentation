@@ -14,16 +14,10 @@ from nibabel.streamlines import load, save
 from tractograms_slr import tractograms_slr
 from lap_single_example import lap_single_example
 
-try:
-    from joblib import Parallel, delayed
-    joblib_available = True
-except ImportError:
-    joblib_available = False
-
 
 def ranking_schema(superset_estimated_target_tract_idx, superset_estimated_target_tract_cost):
     """ Rank all the extracted streamlines estimated by the LAP with multiple examples   
-    according to the number of times that they were selected and the total cost.
+    according to the number of times that they were selected and the total cost. 
     """
     idxs = np.unique(superset_estimated_target_tract_idx)
     how_many_times_selected = np.array([(superset_estimated_target_tract_idx == idx).sum() for idx in idxs])
