@@ -129,3 +129,4 @@ if __name__ == '__main__':
 	result_lap = lap_single_example(args.moving, args.static, args.ex, args.aff)
 
 	sys.exit()    
+
