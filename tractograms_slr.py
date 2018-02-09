@@ -35,7 +35,7 @@ def tractograms_slr(moving_tractogram, static_tractogram, aff_dict):
 	key = tuple([(moving_tractogram_basename, static_tractogram_basename)])[0]
 
 	if table.has_key(key):
-		print("Affine already exist in %s" % table_filename)
+		print("Affine already exists in %s" % table_filename)
 		affine = table[moving_tractogram_basename, static_tractogram_basename].items()[0][1]
 	else:	
 		print("Loading tractograms...")
