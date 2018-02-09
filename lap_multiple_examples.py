@@ -34,7 +34,7 @@ def ranking_schema(superset_estimated_target_tract_idx, superset_estimated_targe
     return idxs[ranking]
 
 
-def lap_multiple_examples(moving_tractograms_dir, static_tractogram, ex_dir, aff_dict, out_trk):
+def lap_multiple_examples(moving_tractograms_dir, static_tractogram, ex_dir, aff_dict, out_filename):
 	"""Code for LAP from multiple examples.
 	"""
 	moving_tractograms = os.listdir(moving_tractograms_dir)
@@ -67,24 +67,42 @@ def lap_multiple_examples(moving_tractograms_dir, static_tractogram, ex_dir, aff
 		print("Extracting the estimated bundle...")
 		estimated_bundle_idx_ranked_med = estimated_bundle_idx_ranked[0:int(example_bundle_len_med)]
 		static_tractogram = nib.streamlines.load(static_tractogram)
-		aff_vox_to_ras = static_tractogram.affine
-		voxel_sizes = static_tractogram.header['voxel_sizes']
-		dimensions = static_tractogram.header['dimensions']
-		static_tractogram = static_tractogram.streamlines
-		estimated_bundle = static_tractogram[estimated_bundle_idx_ranked_med]
 
-		# Creating header
-		hdr = nib.streamlines.trk.TrkFile.create_empty_header()
-		hdr['voxel_sizes'] = voxel_sizes
-		hdr['voxel_order'] = 'LAS'
-		hdr['dimensions'] = dimensions
-		hdr['voxel_to_rasmm'] = aff_vox_to_ras 
+		extension = os.path.splitext(out_filename)[1]
 
-		# Saving tractogram
-		t = nib.streamlines.tractogram.Tractogram(estimated_bundle, affine_to_rasmm=np.eye(4))
-		print("Saving tractogram in %s" % out_trk)
-		nib.streamlines.save(t, out_trk , header=hdr)
-		print("Tractogram saved in %s" % out_trk)
+		if extension == '.trk':
+			aff_vox_to_ras = static_tractogram.affine
+			voxel_sizes = static_tractogram.header['voxel_sizes']
+			dimensions = static_tractogram.header['dimensions']
+			static_tractogram = static_tractogram.streamlines
+			estimated_bundle = static_tractogram[estimated_bundle_idx_ranked_med]
+
+			# Creating header
+			hdr = nib.streamlines.trk.TrkFile.create_empty_header()
+			hdr['voxel_sizes'] = voxel_sizes
+			hdr['voxel_order'] = 'LAS'
+			hdr['dimensions'] = dimensions
+			hdr['voxel_to_rasmm'] = aff_vox_to_ras 
+
+			# Saving tractogram
+			t = nib.streamlines.tractogram.Tractogram(estimated_bundle, affine_to_rasmm=np.eye(4))
+			print("Saving tractogram in %s" % out_filename)
+			nib.streamlines.save(t, out_filename , header=hdr)
+			print("Tractogram saved in %s" % out_filename)
+
+		elif extension == '.tck':
+			static_tractogram = static_tractogram.streamlines
+			estimated_bundle = static_tractogram[estimated_bundle_idx_ranked_med]
+
+			# Saving tractogram
+			t = nib.streamlines.tractogram.Tractogram(estimated_bundle, affine_to_rasmm=np.eye(4))
+			print("Saving tractogram in %s" % out_filename)
+			nib.streamlines.save(t, out_filename)
+			print("Tractogram saved in %s" % out_filename)
+
+		else:
+			print("%s format not supported." % extension)	
+
 
 		return estimated_bundle
 
