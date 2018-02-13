@@ -78,14 +78,14 @@ def show_tracts(estimated_target_tract, target_tract):
 	fvtk.clear(ren)
 
 
-def lap_single_example(moving_tractogram, static_tractogram, example, aff_dict):
+def lap_single_example(moving_tractogram, static_tractogram, example):
 	"""Code for LAP from a single example.
 	"""
 	k = 500
 	distance_func = bundles_distances_mam
 
 	print("Computing the affine slr transformation.")
-	affine = tractograms_slr(moving_tractogram, static_tractogram, aff_dict)
+	affine = tractograms_slr(moving_tractogram, static_tractogram)
 
 	print("Applying the affine to the example bundle.")
 	example_bundle = nib.streamlines.load(example)
@@ -105,10 +105,46 @@ def lap_single_example(moving_tractogram, static_tractogram, example, aff_dict):
 	estimated_bundle_idx, min_cost_values = RLAP(kdt, k, dm_example_bundle_aligned, example_bundle_aligned, static_tractogram, distance_func)
 	estimated_bundle = static_tractogram[estimated_bundle_idx]
 
-	# Visualization
-	#show_tracts(estimated_bundle, example_bundle)
-
 	return estimated_bundle_idx, min_cost_values, len(example_bundle)
+
+
+def save_bundle(estimated_bundle_idx, static_tractogram, out_filename):
+
+	extension = os.path.splitext(out_filename)[1]
+	static_tractogram = nib.streamlines.load(static_tractogram)
+
+	if extension == '.trk':
+		aff_vox_to_ras = static_tractogram.affine
+		voxel_sizes = static_tractogram.header['voxel_sizes']
+		dimensions = static_tractogram.header['dimensions']
+		static_tractogram = static_tractogram.streamlines
+		estimated_bundle = static_tractogram[estimated_bundle_idx]
+
+		# Creating header
+		hdr = nib.streamlines.trk.TrkFile.create_empty_header()
+		hdr['voxel_sizes'] = voxel_sizes
+		hdr['voxel_order'] = 'LAS'
+		hdr['dimensions'] = dimensions
+		hdr['voxel_to_rasmm'] = aff_vox_to_ras 
+
+		# Saving tractogram
+		t = nib.streamlines.tractogram.Tractogram(estimated_bundle, affine_to_rasmm=np.eye(4))
+		print("Saving tractogram in %s" % out_filename)
+		nib.streamlines.save(t, out_filename , header=hdr)
+		print("Tractogram saved in %s" % out_filename)
+
+	elif extension == '.tck':
+		static_tractogram = static_tractogram.streamlines
+		estimated_bundle = static_tractogram[estimated_bundle_idx]
+
+		# Saving tractogram
+		t = nib.streamlines.tractogram.Tractogram(estimated_bundle, affine_to_rasmm=np.eye(4))
+		print("Saving bundle in %s" % out_filename)
+		nib.streamlines.save(t, out_filename)
+		print("Bundle saved in %s" % out_filename)
+
+	else:
+		print("%s format not supported." % extension)	
 
 
 if __name__ == '__main__':
@@ -121,12 +157,16 @@ if __name__ == '__main__':
 	parser.add_argument('-static', nargs='?',  const=1, default='',
 	                    help='The static tractogram filename')
 	parser.add_argument('-ex', nargs='?',  const=1, default='',
-	                    help='The example bundle filename')
-	parser.add_argument('-aff', nargs='?',  const=1, default='',
-	                    help='The input affine table filename')            
+	                    help='The example (moving) bundle filename')  
+	parser.add_argument('-out', nargs='?',  const=1, default='',
+	                    help='The output estimated bundle filename')                               
 	args = parser.parse_args()
 
-	result_lap = lap_single_example(args.moving, args.static, args.ex, args.aff)
+	result_lap = lap_single_example(args.moving, args.static, args.ex)
+
+	if args.out:
+		estimated_bundle_idx = result_lap[0]
+		save_bundle(estimated_bundle_idx, args.static, args.out)
 
 	sys.exit()    
 
