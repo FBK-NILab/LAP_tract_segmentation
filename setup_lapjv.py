@@ -1,6 +1,9 @@
-from distutils.core import setup
-from Cython.Build import cythonize
+from distutils.core import setup, Extension
+import numpy
 
 setup(
-    ext_modules = cythonize("linear_assignment.pyx")
+    ext_modules = [
+    	Extension("linear_assignment",["linear_assignment.c"],
+    			include_dirs=[numpy.get_include()]),
+    ],
 )
