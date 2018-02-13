@@ -34,7 +34,7 @@ def ranking_schema(superset_estimated_target_tract_idx, superset_estimated_targe
     return idxs[ranking]
 
 
-def lap_multiple_examples(moving_tractograms_dir, static_tractogram, ex_dir, aff_dict, out_filename):
+def lap_multiple_examples(moving_tractograms_dir, static_tractogram, ex_dir, out_filename):
 	"""Code for LAP from multiple examples.
 	"""
 	moving_tractograms = os.listdir(moving_tractograms_dir)
@@ -53,7 +53,7 @@ def lap_multiple_examples(moving_tractograms_dir, static_tractogram, ex_dir, aff
 		for i in range(nt):
 			moving_tractogram = '%s/%s' %(moving_tractograms_dir, moving_tractograms[i])
 			example = '%s/%s' %(ex_dir, examples[i])
-			tmp = np.array([lap_single_example(moving_tractogram, static_tractogram, example, aff_dict)])
+			tmp = np.array([lap_single_example(moving_tractogram, static_tractogram, example)])
 			result_lap.append(tmp)
 
 		result_lap = np.array(result_lap)
@@ -96,9 +96,9 @@ def lap_multiple_examples(moving_tractograms_dir, static_tractogram, ex_dir, aff
 
 			# Saving tractogram
 			t = nib.streamlines.tractogram.Tractogram(estimated_bundle, affine_to_rasmm=np.eye(4))
-			print("Saving tractogram in %s" % out_filename)
+			print("Saving bundle in %s" % out_filename)
 			nib.streamlines.save(t, out_filename)
-			print("Tractogram saved in %s" % out_filename)
+			print("Bundle saved in %s" % out_filename)
 
 		else:
 			print("%s format not supported." % extension)	
@@ -117,13 +117,11 @@ if __name__ == '__main__':
 	parser.add_argument('-static', nargs='?',  const=1, default='',
 	                    help='The static tractogram filename')
 	parser.add_argument('-ex_dir', nargs='?',  const=1, default='',
-	                    help='The examples bundle directory')
-	parser.add_argument('-aff', nargs='?',  const=1, default='',
-	                    help='The input affine table filename')
+	                    help='The examples (moving) bundle directory')
 	parser.add_argument('-out', nargs='?',  const=1, default='default',
 	                    help='The output estimated bundle filename')                   
 	args = parser.parse_args()
 
-	estimated_bundle = lap_multiple_examples(args.moving_dir, args.static, args.ex_dir, args.aff, args.out)
+	estimated_bundle = lap_multiple_examples(args.moving_dir, args.static, args.ex_dir, args.out)
 
 	sys.exit()    
