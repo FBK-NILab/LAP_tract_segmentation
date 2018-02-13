@@ -20,9 +20,9 @@ from dipy.align.streamlinear import StreamlineLinearRegistration
 from dipy.tracking.streamline import set_number_of_points
 
 
-def tractograms_slr(moving_tractogram, static_tractogram, aff_dict):
+def tractograms_slr(moving_tractogram, static_tractogram):
 
-	table_filename = '%s.pickle' %aff_dict
+	table_filename = 'affine_dictionary.pickle'
 	if isfile(table_filename):
 		print("Retrieving past results from %s" % table_filename)
 		table = pickle.load(open(table_filename))
@@ -82,12 +82,10 @@ if __name__ == '__main__':
 	parser.add_argument('-moving', nargs='?', const=1, default='',
 	                    help='The moving tractogram filename')
 	parser.add_argument('-static', nargs='?',  const=1, default='',
-	                    help='The static tractogram filename')
-	parser.add_argument('-out', nargs='?',  const=1, default='default',
-	                    help='The output affine table filename .pickle')                    
+	                    help='The static tractogram filename')                   
 	args = parser.parse_args()
 
-	affine = tractograms_slr(args.moving, args.static, args.out)	
+	affine = tractograms_slr(args.moving, args.static)	
 	                            
 	sys.exit()    
 
