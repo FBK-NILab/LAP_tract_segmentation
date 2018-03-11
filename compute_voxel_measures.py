@@ -3,10 +3,12 @@
 from __future__ import print_function
 import nibabel as nib
 import numpy as np
+import dipy
 from nibabel.streamlines import load, save 
 from dipy.tracking.utils import affine_for_trackvis
 from dipy.tracking.vox2track import streamline_mapping
 from dipy.tracking.distances import bundles_distances_mam
+from dipy.tracking.life import voxel2streamline
 from dipy.viz import fvtk
 from dissimilarity import compute_dissimilarity, dissimilarity
 from sklearn.neighbors import KDTree
@@ -62,8 +64,16 @@ def compute_voxel_measures(estimated_tract_filename, true_tract_filename):
     estimated_tract = estimated_tract.streamlines
     true_tract = true_tract.streamlines
 
-    voxel_list_estimated_tract = streamline_mapping(estimated_tract, affine=affine_true).keys()
-    voxel_list_true_tract = streamline_mapping(true_tract, affine=affine_true).keys()
+    #affine_true=affine_for_trackvis([1.25, 1.25, 1.25])
+    aff=np.array([[-1.25, 0, 0, 90],[0, 1.25, 0, -126],[0,0,1.25,-72],[0,0,0,1]])
+
+    voxel_list_estimated_tract = streamline_mapping(estimated_tract, affine=aff).keys()
+    voxel_list_true_tract = streamline_mapping(true_tract, affine=aff).keys()
+    #voxel_list_estimated_tract = dipy.tracking.life.voxel2streamline(estimated_tract, affine=affine_est)
+    #voxel_list_true_tract = dipy.tracking.life.voxel2streamline(true_tract, affine=affine_true)
+    #print(voxel_list_estimated_tract)
+    #print(voxel_list_true_tract)
+    
     TP = len(set(voxel_list_estimated_tract).intersection(set(voxel_list_true_tract)))
     vol_A = len(set(voxel_list_estimated_tract))
     vol_B = len(set(voxel_list_true_tract))
@@ -89,8 +99,8 @@ if __name__ == '__main__':
     cost_values = []
 
     #true_target_tract_filename = '%s/%s/%s_%s_tract.trk' %(true_tracts_dir, sub, sub, tract_name)
-    true_tract_filename = '/N/u/gberto/Karst/LAP_tract_segmentation/preliminary_tests/0008_afL_self.trk'
-    #true_tract_filename = '/N/u/gberto/Karst/Downloads/0007_Left_Cingulum_Cingulate_tract_E0008.tck'
+    #true_tract_filename = '/N/u/gberto/Karst/LAP_tract_segmentation/preliminary_tests/0008_afL_self.trk'
+    true_tract_filename = '/N/u/gberto/Karst/Downloads/0007_Left_Cingulum_Cingulate_tract_E0008.tck'
 
     for example in examples_list:
 	
@@ -106,7 +116,12 @@ if __name__ == '__main__':
 	DSC_values.append(DSC)
 	cost_values.append(cost)
 
-    
+    #debugging
+    DSC, TP, vol_A, vol_B = compute_voxel_measures(estimated_tract_filename, estimated_tract_filename)
+    print("The DSC value is %s (must be 1)" %DSC)
+    DSC, TP, vol_A, vol_B = compute_voxel_measures(true_tract_filename, true_tract_filename)
+    print("The DSC value is %s (must be 1)" %DSC)
+
     # plot
     plt.figure()
     plt.scatter(DSC_values, cost_values, c="g", alpha=0.5, marker=r'$\clubsuit$', label="Luck")
