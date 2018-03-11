@@ -55,13 +55,7 @@ def RLAP(kdt, k, dm_source_tract, source_tract, tractogram, distance):
     tractogram = np.array(tractogram, dtype=np.object)
     D, I = kdt.query(dm_source_tract, k=k)
     superset = np.unique(I.flat)
-    
-    #debugging
-    #static_tractogram_filename='O3D_converted_dataset/0001_acpc/0001_output_fe_acpc.trk'
-    #save_bundle(superset, static_tractogram_filename, '0001_afL_k1000_superset.trk')  
-    #static_tractogram_filename='/N/u/gberto/Karst/Desktop/O3D_converted_dataset/0008/0008_output_fe_acpc.trk'
-    #save_bundle(superset, static_tractogram_filename, '0008_afL_k1000_superset.trk')  
-
+    np.save('superset_idx', superset)
     print("Computing the cost matrix (%s x %s) for RLAP... " % (len(source_tract),
                                                              len(superset)))
     cost_matrix = dissimilarity(source_tract, tractogram[superset], distance)
@@ -135,7 +129,7 @@ def save_bundle(estimated_bundle_idx, static_tractogram, out_filename):
 		hdr['dimensions'] = dimensions
 		hdr['voxel_to_rasmm'] = aff_vox_to_ras 
 
-		# Saving tractogram
+		# Saving bundle
 		t = nib.streamlines.tractogram.Tractogram(estimated_bundle, affine_to_rasmm=np.eye(4))
 		nib.streamlines.save(t, out_filename, header=hdr)
 		print("Bundle saved in %s" % out_filename)
@@ -148,8 +142,9 @@ def save_bundle(estimated_bundle_idx, static_tractogram, out_filename):
 		hdr['voxel_sizes'] = voxel_sizes
 		hdr['voxel_order'] = 'LAS'
 		hdr['dimensions'] = dimensions
+		hdr['voxel_to_rasmm'] = aff_vox_to_ras
 
-		# Saving tractogram
+		# Saving bundle
 		t = nib.streamlines.tractogram.Tractogram(estimated_bundle, affine_to_rasmm=np.eye(4))
 		nib.streamlines.save(t, out_filename, header=hdr)
 		print("Bundle saved in %s" % out_filename)
