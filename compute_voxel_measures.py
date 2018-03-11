@@ -59,13 +59,16 @@ def compute_voxel_measures(estimated_tract_filename, true_tract_filename):
     #Loading tracts
     estimated_tract = nib.streamlines.load(estimated_tract_filename)
     true_tract = nib.streamlines.load(true_tract_filename)
-    affine_est = estimated_tract.affine
+    affine_est = estimated_tract.header['voxel_to_rasmm']
     affine_true = true_tract.affine
     estimated_tract = estimated_tract.streamlines
     true_tract = true_tract.streamlines
 
     #affine_true=affine_for_trackvis([1.25, 1.25, 1.25])
-    aff=np.array([[-1.25, 0, 0, 90],[0, 1.25, 0, -126],[0,0,1.25,-72],[0,0,0,1]])
+    if tract_name == '':
+	aff = affine_est
+    else:
+    	aff=np.array([[-1.25, 0, 0, 90],[0, 1.25, 0, -126],[0,0,1.25,-72],[0,0,0,1]])
 
     voxel_list_estimated_tract = streamline_mapping(estimated_tract, affine=aff).keys()
     voxel_list_true_tract = streamline_mapping(true_tract, affine=aff).keys()
@@ -84,50 +87,48 @@ def compute_voxel_measures(estimated_tract_filename, true_tract_filename):
 
 if __name__ == '__main__':
 
-    #estimated_tract_filename = '../initial_tests/0007_Left_Cingulum_Cingulate_tract.trk'
-    #estimated_tract_filename = '../initial_tests/0007_cbL_tract_IU5.trk'
-    #true_tract_filename = '../initial_tests/0007_Left_Cingulum_Cingulate_tract_true.trk'
-
     sub = '100610'
-    tract_name = 'Left_Arcuate'
+    tract_name_list = ['Left_Arcuate', 'Callosum_Forceps_Minor', 'Right_Cingulum_Cingulate']#, 'Callosum_Forceps_Major']
     experiment = 'test' #'exp2'
     examples_list = ['0005', '0006', '0007', '0008']
     true_tracts_dir = '/N/dc2/projects/lifebid/giulia/data/HCP3_processed_data_trk'
     results_dir = '/N/dc2/projects/lifebid/giulia/data/results/%s' %experiment
 
-    DSC_values = []
-    cost_values = []
+    DSC_values = np.zeros((len(tract_name_list), len(examples_list)))
+    cost_values = np.zeros((len(tract_name_list), len(examples_list)))
 
-    #true_target_tract_filename = '%s/%s/%s_%s_tract.trk' %(true_tracts_dir, sub, sub, tract_name)
-    #true_tract_filename = '/N/u/gberto/Karst/LAP_tract_segmentation/preliminary_tests/0008_afL_self.trk'
-    true_tract_filename = '/N/u/gberto/Karst/Downloads/0007_Left_Cingulum_Cingulate_tract_E0008.tck'
-
-    for example in examples_list:
+    for t, tract_name in enumerate(tract_name_list):
 	
-	estimated_tract_filename = '%s/%s/%s_%s_tract_E%s.tck' %(results_dir, sub, sub, tract_name, example)	
+  	true_tract_filename = '%s/%s/%s_%s_tract.trk' %(true_tracts_dir, sub, sub, tract_name)
 
-    	DSC, TP, vol_A, vol_B = compute_voxel_measures(estimated_tract_filename, true_tract_filename)
-    	print("The DSC value is %s" %DSC)
+    	for e, example in enumerate(examples_list):
+	
+	    estimated_tract_filename = '%s/%s/%s_%s_tract_E%s.tck' %(results_dir, sub, sub, tract_name, example)	
 
-	result_lap = np.load('%s/%s/%s_%s_result_lap_E%s.npy' %(results_dir, sub, sub, tract_name, example))
-	min_cost_values = result_lap[1]
-	cost = np.sum(min_cost_values)/len(min_cost_values)
+	    DSC, TP, vol_A, vol_B = compute_voxel_measures(estimated_tract_filename, true_tract_filename)	
+	    print("The DSC value is %s" %DSC)
 
-	DSC_values.append(DSC)
-	cost_values.append(cost)
+	    result_lap = np.load('%s/%s/%s_%s_result_lap_E%s.npy' %(results_dir, sub, sub, tract_name, example))
+	    min_cost_values = result_lap[1]
+	    cost = np.sum(min_cost_values)/len(min_cost_values)
 
-    #debugging
-    DSC, TP, vol_A, vol_B = compute_voxel_measures(estimated_tract_filename, estimated_tract_filename)
-    print("The DSC value is %s (must be 1)" %DSC)
-    DSC, TP, vol_A, vol_B = compute_voxel_measures(true_tract_filename, true_tract_filename)
-    print("The DSC value is %s (must be 1)" %DSC)
+	    DSC_values[t,e] = DSC
+	    cost_values[t,e] = cost
+
+        #debugging
+        DSC, TP, vol_A, vol_B = compute_voxel_measures(estimated_tract_filename, estimated_tract_filename)
+        print("The DSC value is %s (must be 1)" %DSC)
+        DSC, TP, vol_A, vol_B = compute_voxel_measures(true_tract_filename, true_tract_filename)
+        print("The DSC value is %s (must be 1)" %DSC)
 
     # plot
+    markers_list = ['o', '^', '*', 'd']
     plt.figure()
-    plt.scatter(DSC_values, cost_values, c="g", alpha=0.5, marker=r'$\clubsuit$', label="Luck")
+    for i in range(len(tract_name_list)):
+        plt.scatter(DSC_values[i], cost_values[i], c="g",  marker=markers_list[i], s=70, label=tract_name_list[i])
     plt.xlabel("DSC")
     plt.ylabel("cost")
-    plt.legend(loc=1)
+    plt.legend(loc=3)
     plt.show()
 
 
