@@ -81,18 +81,18 @@ if __name__ == '__main__':
     sub = '100610'
     tract_name_list = ['Left_Arcuate', 'Callosum_Forceps_Minor', 'Right_Cingulum_Cingulate', 'Callosum_Forceps_Major']
     experiment = 'test' #'exp2'
-    examples_list = ['0005', '0006', '0007', '0008']
+    example_list = ['0005', '0006', '0007', '0008']
     true_tracts_dir = '/N/dc2/projects/lifebid/giulia/data/HCP3_processed_data_trk'
-    results_dir = '/N/dc2/projects/lifebid/giulia/data/results/%s' %experiment
+    results_dir = '/N/dc2/projects/lifebid/giulia/results/%s' %experiment
 
-    DSC_values = np.zeros((len(tract_name_list), len(examples_list)))
-    cost_values = np.zeros((len(tract_name_list), len(examples_list)))
+    DSC_values = np.zeros((len(tract_name_list), len(example_list)))
+    cost_values = np.zeros((len(tract_name_list), len(example_list)))
 
     for t, tract_name in enumerate(tract_name_list):
 	
   	true_tract_filename = '%s/%s/%s_%s_tract.trk' %(true_tracts_dir, sub, sub, tract_name)
 
-    	for e, example in enumerate(examples_list):
+    	for e, example in enumerate(example_list):
 	
 	    estimated_tract_filename = '%s/%s/%s_%s_tract_E%s.tck' %(results_dir, sub, sub, tract_name, example)	
 
