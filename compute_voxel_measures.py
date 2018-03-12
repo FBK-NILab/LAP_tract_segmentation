@@ -88,7 +88,7 @@ def compute_voxel_measures(estimated_tract_filename, true_tract_filename):
 if __name__ == '__main__':
 
     sub = '100610'
-    tract_name_list = ['Left_Arcuate', 'Callosum_Forceps_Minor', 'Right_Cingulum_Cingulate']#, 'Callosum_Forceps_Major']
+    tract_name_list = ['Left_Arcuate', 'Callosum_Forceps_Minor', 'Right_Cingulum_Cingulate', 'Callosum_Forceps_Major']
     experiment = 'test' #'exp2'
     examples_list = ['0005', '0006', '0007', '0008']
     true_tracts_dir = '/N/dc2/projects/lifebid/giulia/data/HCP3_processed_data_trk'
@@ -121,13 +121,24 @@ if __name__ == '__main__':
         DSC, TP, vol_A, vol_B = compute_voxel_measures(true_tract_filename, true_tract_filename)
         print("The DSC value is %s (must be 1)" %DSC)
 
+    #compute statistisc
+    import scipy
+    #from scipy.stats import linregress
+    DSC_vect = DSC_values.reshape((-1,))
+    cost_vect = cost_values.reshape((-1,))
+    slope, intercept, r_value, p_value, std_err = scipy.stats.linregress(DSC_vect, cost_vect)
+    print("The R value is %s" %r_value)
+    
     # plot
+    plt.interactive(True)
     markers_list = ['o', '^', '*', 'd']
     plt.figure()
     for i in range(len(tract_name_list)):
-        plt.scatter(DSC_values[i], cost_values[i], c="g",  marker=markers_list[i], s=70, label=tract_name_list[i])
+        plt.scatter(DSC_values[i], cost_values[i], c='g',  marker=markers_list[i], s=70, label=tract_name_list[i])
+    plt.plot(DSC_vect, intercept + slope*DSC_vect, c='r', linestyle=':')
     plt.xlabel("DSC")
     plt.ylabel("cost")
+    plt.title('R = %s' %r_value)
     plt.legend(loc=3)
     plt.show()
 
