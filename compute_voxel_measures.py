@@ -4,6 +4,7 @@ from __future__ import print_function
 import nibabel as nib
 import numpy as np
 import dipy
+import scipy
 from nibabel.streamlines import load, save 
 from dipy.tracking.utils import affine_for_trackvis
 from dipy.tracking.vox2track import streamline_mapping
@@ -44,9 +45,6 @@ def streamlines_idx(target_tract, kdt, prototypes, distance_func, warning_thresh
     """
     dm_target_tract = distance_func(target_tract, prototypes)
     D, I = kdt.query(dm_target_tract, k=1)
-    # print("D: %s" % D)
-    # print("I: %s" % I)
-    # assert((D < 1.0e-4).all())
     if (D > warning_threshold).any():
         print("WARNING (streamlines_idx()): for %s streamlines D > 1.0e-4 !!" % (D > warning_threshold).sum())
     print(D)
@@ -59,23 +57,16 @@ def compute_voxel_measures(estimated_tract_filename, true_tract_filename):
     #Loading tracts
     estimated_tract = nib.streamlines.load(estimated_tract_filename)
     true_tract = nib.streamlines.load(true_tract_filename)
-    affine_est = estimated_tract.header['voxel_to_rasmm']
+    affine_est = estimated_tract.affine
     affine_true = true_tract.affine
     estimated_tract = estimated_tract.streamlines
     true_tract = true_tract.streamlines
 
     #affine_true=affine_for_trackvis([1.25, 1.25, 1.25])
-    if tract_name == '':
-	aff = affine_est
-    else:
-    	aff=np.array([[-1.25, 0, 0, 90],[0, 1.25, 0, -126],[0,0,1.25,-72],[0,0,0,1]])
+    aff=np.array([[-1.25, 0, 0, 90],[0, 1.25, 0, -126],[0, 0, 1.25, -72],[0, 0, 0, 1]])
 
     voxel_list_estimated_tract = streamline_mapping(estimated_tract, affine=aff).keys()
     voxel_list_true_tract = streamline_mapping(true_tract, affine=aff).keys()
-    #voxel_list_estimated_tract = dipy.tracking.life.voxel2streamline(estimated_tract, affine=affine_est)
-    #voxel_list_true_tract = dipy.tracking.life.voxel2streamline(true_tract, affine=affine_true)
-    #print(voxel_list_estimated_tract)
-    #print(voxel_list_true_tract)
     
     TP = len(set(voxel_list_estimated_tract).intersection(set(voxel_list_true_tract)))
     vol_A = len(set(voxel_list_estimated_tract))
@@ -122,8 +113,6 @@ if __name__ == '__main__':
         print("The DSC value is %s (must be 1)" %DSC)
 
     #compute statistisc
-    import scipy
-    #from scipy.stats import linregress
     DSC_vect = DSC_values.reshape((-1,))
     cost_vect = cost_values.reshape((-1,))
     slope, intercept, r_value, p_value, std_err = scipy.stats.linregress(DSC_vect, cost_vect)
