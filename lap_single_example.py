@@ -55,7 +55,7 @@ def RLAP(kdt, k, dm_source_tract, source_tract, tractogram, distance):
     tractogram = np.array(tractogram, dtype=np.object)
     D, I = kdt.query(dm_source_tract, k=k)
     superset = np.unique(I.flat)
-    np.save('superset_idx', superset)
+    #np.save('superset_idx', superset)
     print("Computing the cost matrix (%s x %s) for RLAP... " % (len(source_tract),
                                                              len(superset)))
     cost_matrix = dissimilarity(source_tract, tractogram[superset], distance)
@@ -169,7 +169,7 @@ if __name__ == '__main__':
 
 	result_lap = lap_single_example(args.moving, args.static, args.ex)
 
-	np.save('result_lap', result_lap)
+	#np.save('result_lap', result_lap)
 
 	if args.out:
 		estimated_bundle_idx = result_lap[0]

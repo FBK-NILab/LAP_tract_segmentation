@@ -8,11 +8,11 @@ addpath(genpath('/N/u/brlife/git/o3d-code'));
 addpath(genpath('/N/u/brlife/git/encode'));
 addpath(genpath('/N/u/gberto/Karst/git/mba'));
 
-addpath(genpath('/gpfs/home/g/b/gberto/Karst/Desktop/O3D_dataset'));
-addpath(genpath('/N/u/gberto/Karst/Desktop/O3D_dataset'));
+addpath(genpath('/N/dc2/projects/lifebid/giulia/data'));
+
 
 %variables
-sub='0007';
+sub='991267';
 num_tracts=20;
 
 src_dir = sprintf('/N/dc2/projects/lifebid/giulia/data/HCP3_processed_data/%s',sub);
@@ -47,6 +47,8 @@ else
     end
     
 end    
+
+disp('Conversion done.');
 
 %% Visualization
 
