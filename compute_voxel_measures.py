@@ -10,57 +10,10 @@ from dipy.tracking.utils import affine_for_trackvis
 from dipy.tracking.vox2track import streamline_mapping
 from dipy.tracking.distances import bundles_distances_mam
 from dipy.tracking.life import voxel2streamline
-from dipy.viz import fvtk
-from dissimilarity import compute_dissimilarity, dissimilarity
-from sklearn.neighbors import KDTree
-from time import sleep
 import matplotlib.pyplot as plt
 
 
-def compute_kdtree_and_dr_tractogram(tractogram, num_prototypes=None):
-    """Compute the dissimilarity representation of the target tractogram and 
-    build the kd-tree.
-    """
-    tractogram = np.array(tractogram, dtype=np.object)
-    print("Computing dissimilarity matrices...")
-    if num_prototypes is None:
-        num_prototypes = 40
-        print("Using %s prototypes as in Olivetti et al. 2012."
-              % num_prototypes)
-    print("Using %s prototypes" % num_prototypes)
-    dm_tractogram, prototype_idx = compute_dissimilarity(tractogram,
-                                                         num_prototypes=num_prototypes,
-                                                         distance=bundles_distances_mam,
-                                                         prototype_policy='sff',
-                                                         n_jobs=-1,
-                                                         verbose=False)
-    prototypes = tractogram[prototype_idx]
-    print("Building the KD-tree of tractogram.")
-    kdt = KDTree(dm_tractogram)
-    return kdt, prototypes   
-
-
-def streamlines_idx(target_tract, kdt, prototypes, distance_func, warning_threshold=1.0e-4):
-    """Retrieve indexes of the streamlines of the target tract.
-    """
-    dm_target_tract = distance_func(target_tract, prototypes)
-    D, I = kdt.query(dm_target_tract, k=1)
-    if (D > warning_threshold).any():
-        print("WARNING (streamlines_idx()): for %s streamlines D > 1.0e-4 !!" % (D > warning_threshold).sum())
-    print(D)
-    target_tract_idx = I.squeeze()
-    return target_tract_idx 
-
-
-def compute_voxel_measures(estimated_tract_filename, true_tract_filename):
-
-    #Loading tracts
-    estimated_tract = nib.streamlines.load(estimated_tract_filename)
-    true_tract = nib.streamlines.load(true_tract_filename)
-    affine_est = estimated_tract.affine
-    affine_true = true_tract.affine
-    estimated_tract = estimated_tract.streamlines
-    true_tract = true_tract.streamlines
+def compute_voxel_measures(estimated_tract, true_tract):
 
     #affine_true=affine_for_trackvis([1.25, 1.25, 1.25])
     aff=np.array([[-1.25, 0, 0, 90],[0, 1.25, 0, -126],[0, 0, 1.25, -72],[0, 0, 0, 1]])
@@ -91,12 +44,16 @@ if __name__ == '__main__':
     for t, tract_name in enumerate(tract_name_list):
 	
   	true_tract_filename = '%s/%s/%s_%s_tract.trk' %(true_tracts_dir, sub, sub, tract_name)
+	true_tract = nib.streamlines.load(true_tract_filename)
+	true_tract = true_tract.streamlines
 
     	for e, example in enumerate(example_list):
 	
-	    estimated_tract_filename = '%s/%s/%s_%s_tract_E%s.tck' %(results_dir, sub, sub, tract_name, example)	
+	    estimated_tract_filename = '%s/%s/%s_%s_tract_E%s.tck' %(results_dir, sub, sub, tract_name, example)
+            estimated_tract = nib.streamlines.load(estimated_tract_filename)
+	    estimated_tract = estimated_tract.streamlines	
 
-	    DSC, TP, vol_A, vol_B = compute_voxel_measures(estimated_tract_filename, true_tract_filename)	
+	    DSC, TP, vol_A, vol_B = compute_voxel_measures(estimated_tract, true_tract)	
 	    print("The DSC value is %s" %DSC)
 
 	    result_lap = np.load('%s/%s/%s_%s_result_lap_E%s.npy' %(results_dir, sub, sub, tract_name, example))
@@ -107,9 +64,9 @@ if __name__ == '__main__':
 	    cost_values[t,e] = cost
 
         #debugging
-        DSC, TP, vol_A, vol_B = compute_voxel_measures(estimated_tract_filename, estimated_tract_filename)
+        DSC, TP, vol_A, vol_B = compute_voxel_measures(estimated_tract, estimated_tract)
         print("The DSC value is %s (must be 1)" %DSC)
-        DSC, TP, vol_A, vol_B = compute_voxel_measures(true_tract_filename, true_tract_filename)
+        DSC, TP, vol_A, vol_B = compute_voxel_measures(true_tract, true_tract)
         print("The DSC value is %s (must be 1)" %DSC)
 
     #compute statistisc
