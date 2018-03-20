@@ -62,7 +62,7 @@ def compute_loss_and_bmd(source_tract, ett):
     return L, BMD 
 
 
-def compute_superset(true_tract, kdt, prototypes, k=1000, distance_func=bundles_distances_mam):
+def compute_superset(true_tract, kdt, prototypes, k=500, distance_func=bundles_distances_mam):
     """Compute a superset of the true target tract with k-NN.
     """
     true_tract = np.array(true_tract, dtype=np.object)
@@ -101,21 +101,25 @@ def compute_roc_curve_lap(result_lap, true_tract, target_tractogram):
     correspondent_idx = np.array([np.where(superset_idx==true_tract_idx[i]) for i in range(len(true_tract_idx))])
     y_true[correspondent_idx] = 1
 
-    y_score = np.zeros(len(superset_idx))
     min_cost_values = result_lap[1]
-    
+    estimated_tract_idx = result_lap[0]
     m = np.argsort(min_cost_values)
 
+    c=len(m)
+    y_score = c*np.ones(len(superset_idx))
+    
+    
+
     f=np.array([np.where(superset_idx==estimated_tract_idx[i]) for i in range(len(estimated_tract_idx))])
-    h=np.stack(np.stack(f)) #???
+    h=f
 	
 
-    for i, me in enumerate(m):
-        y_score[h[i]] = m
-	
+    for i in range(c):
+        y_score[h[i]] = m[i]
 
+    y_score=abs(y_score-c)
 
-    return superset_idx, true_tract_idx, correspondent_idx, y_true
+    return superset_idx, true_tract_idx, correspondent_idx, y_true, y_score, f, h, m
 
 
 
