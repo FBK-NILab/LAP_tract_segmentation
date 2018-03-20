@@ -62,7 +62,7 @@ def compute_loss_and_bmd(source_tract, ett):
     return L, BMD 
 
 
-def compute_superset(true_tract, kdt, prototypes, k=500, distance_func=bundles_distances_mam):
+def compute_superset(true_tract, kdt, prototypes, k=1000, distance_func=bundles_distances_mam):
     """Compute a superset of the true target tract with k-NN.
     """
     true_tract = np.array(true_tract, dtype=np.object)
@@ -107,12 +107,9 @@ def compute_roc_curve_lap(result_lap, true_tract, target_tractogram):
 
     c=len(m)
     y_score = c*np.ones(len(superset_idx))
-    
-    
 
     f=np.array([np.where(superset_idx==estimated_tract_idx[i]) for i in range(len(estimated_tract_idx))])
-    h=f
-	
+    h=f	
 
     for i in range(c):
         y_score[h[i]] = m[i]
@@ -122,6 +119,33 @@ def compute_roc_curve_lap(result_lap, true_tract, target_tractogram):
     return superset_idx, true_tract_idx, correspondent_idx, y_true, y_score, f, h, m
 
 
+def compute_y_vectors_lap(estimated_tract_idx, estimated_tract_idx_ranked, true_tract, target_tractogram):
+    """Compute y_true and y_score.
+    """ 
+    print("Compute the dissimilarity representation of the target tractogram and build the kd-tree.")
+    kdt, prototypes = compute_kdtree_and_dr_tractogram(target_tractogram)
+
+    print("Compute a superset of the true target tract with k-NN.")
+    superset_idx = compute_superset(true_tract, kdt, prototypes)
+
+    print("Retrieving indeces of the true_tract")
+    true_tract_idx = streamlines_idx(true_tract, kdt, prototypes)
+
+    print("Compute y_true.")
+    y_true = np.zeros(len(superset_idx))
+    correspondent_idx_true = np.array([np.where(superset_idx==true_tract_idx[i]) for i in range(len(true_tract_idx))])
+    y_true[correspondent_idx_true] = 1
+
+    print("Compute y_score.")
+    S = len(estimated_tract_idx)
+    y_score = S*np.ones(len(superset_idx))
+    correspondent_idx_score = np.array([np.where(superset_idx==estimated_tract_idx[i]) for i in range(S)])
+    for i in range(S):
+        y_score[correspondent_idx_score[i]] = estimated_tract_idx_ranked[i]
+    #invert the ranking   
+    y_score = abs(y_score-S)
+
+    return superset_idx, true_tract_idx, correspondent_idx_true, correspondent_idx_score, y_true, y_score
 
 
 

@@ -8,16 +8,16 @@ import dipy
 import scipy
 from nibabel.streamlines import load, save 
 from compute_voxel_measures import compute_voxel_measures
-from compute_streamline_measures import compute_loss_and_bmd, compute_roc_curve_lap
+from compute_streamline_measures import compute_loss_and_bmd, compute_roc_curve_lap, compute_y_vectors_lap
 import matplotlib.pyplot as plt
 from sklearn.metrics import roc_auc_score,roc_curve,auc
 
 if __name__ == '__main__':
 
     experiment = 'exp2' #'test' #'exp2'
-    sub_list = ['993675', '996782', '995174']
-    tract_name_list = ['Left_Arcuate', 'Callosum_Forceps_Minor']#, 'Right_Cingulum_Cingulate', 'Callosum_Forceps_Major']
-    example_list = ['615441', '615744', '616645', '617748', '633847', '635245', '638049'] #'634748', '618952'
+    sub_list = ['996782'] #['993675']#, '996782', '995174']
+    tract_name_list = ['Left_Arcuate']#, 'Callosum_Forceps_Minor']#, 'Right_Cingulum_Cingulate', 'Callosum_Forceps_Major']
+    example_list = ['615441']#, '615744', '616645', '617748', '633847', '635245', '638049'] #'634748', '618952'
     true_tracts_dir = '/N/dc2/projects/lifebid/giulia/data/HCP3_processed_data_trk'
     results_dir = '/N/dc2/projects/lifebid/giulia/results/%s' %experiment
 
@@ -131,7 +131,13 @@ if __name__ == '__main__':
     target_tractogram_filename = '%s/%s/%s_output_fe.trk' %(true_tracts_dir, sub, sub)
     target_tractogram = nib.streamlines.load(target_tractogram_filename)
     target_tractogram = target_tractogram.streamlines
+    estimated_tract_idx = result_lap[0]
+    min_cost_values = result_lap[1]
+    estimated_tract_idx_ranked = np.argsort(min_cost_values)
+
     superset_idx, true_tract_idx, correspondent_idx, y_true, y_score, f, h, m = compute_roc_curve_lap(result_lap, true_tract, target_tractogram)
+    #superset_idx, true_tract_idx, correspondent_idx_true, correspondent_idx_score, y_true, y_score = compute_y_vectors_lap(estimated_tract_idx, estimated_tract_idx_ranked, true_tract, target_tractogram)
+
     fpr, tpr, thresholds = roc_curve(y_true, y_score)
     roc_auc = auc(fpr, tpr)
 

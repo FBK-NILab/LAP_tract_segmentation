@@ -27,12 +27,16 @@ if __name__ == '__main__':
     	for t, tract_name in enumerate(tract_name_list):
 	
   	    true_tract_filename = '%s/%s/%s_%s_tract.trk' %(true_tracts_dir, sub, sub, tract_name)
+	    true_tract = nib.streamlines.load(true_tract_filename)
+	    true_tract = true_tract.streamlines
 
     	    for p, partition in enumerate(partition_list):
 	
-	    	estimated_tract_filename = '%s/%s/%s_%s_tract_%s.tck' %(results_dir, sub, sub, tract_name, partition)	
+	    	estimated_tract_filename = '%s/%s/%s_%s_tract_%s.tck' %(results_dir, sub, sub, tract_name, partition)
+		estimated_tract = nib.streamlines.load(estimated_tract_filename)
+   		estimated_tract = estimated_tract.streamlines	
 
-	    	DSC, TP, vol_A, vol_B = compute_voxel_measures(estimated_tract_filename, true_tract_filename)	
+	    	DSC, TP, vol_A, vol_B = compute_voxel_measures(estimated_tract, true_tract)	
 	    	print("The DSC value is %s" %DSC)
 
 	    	result_lap = np.load('%s/%s/%s_%s_result_lap_%s.npy' %(results_dir, sub, sub, tract_name, partition))
@@ -40,9 +44,9 @@ if __name__ == '__main__':
 	    	
 
             #debugging
-            DSC, TP, vol_A, vol_B = compute_voxel_measures(estimated_tract_filename, estimated_tract_filename)
+            DSC, TP, vol_A, vol_B = compute_voxel_measures(estimated_tract, estimated_tract)
             print("The DSC value is %s (must be 1)" %DSC)
-            DSC, TP, vol_A, vol_B = compute_voxel_measures(true_tract_filename, true_tract_filename)
+            DSC, TP, vol_A, vol_B = compute_voxel_measures(true_tract, true_tract)
             print("The DSC value is %s (must be 1)" %DSC)
 
 

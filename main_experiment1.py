@@ -13,8 +13,8 @@ if __name__ == '__main__':
 
     experiment = 'exp1' #'test' #'exp1'
     sub_list = ['983773', '990366', '991267'] #['993675', '996782'] #
-    tract_name_list = ['Left_Arcuate'] #['Callosum_Forceps_Minor'] #, 'Callosum_Forceps_Minor', 'Right_Cingulum_Cingulate', 'Callosum_Forceps_Major']
-    partition_list = ['A1', 'A4', 'A8'] #, 'A12', 'A16'] 
+    tract_name_list = ['Left_Arcuate', 'Callosum_Forceps_Minor'] #, 'Callosum_Forceps_Minor', 'Right_Cingulum_Cingulate', 'Callosum_Forceps_Major']
+    partition_list = ['A12', 'A16'] #['A1', 'A4', 'A8'] #, 
     src_dir = '/N/dc2/projects/lifebid/giulia/data'
     results_dir = '/N/dc2/projects/lifebid/giulia/results/%s' %experiment
 
@@ -32,6 +32,9 @@ if __name__ == '__main__':
 
 		result_lap = lap_multiple_examples(moving_tractograms_dir, static_tractogram, ex_dir, out_filename)
 		
-		np_filename = '%s/%s/%s_%s_result_lap_%s' %(results_dir, sub, sub, tract_name, partition)
-		np.save(np_filename, result_lap)
-
+		np_lap_filename = '%s/%s/%s_%s_result_lap_%s' %(results_dir, sub, sub, tract_name, partition)
+		np.save(np_lap_filename, result_lap)
+		
+		idx_ranked = np.load('estimated_bundle_idx_ranked.npy')
+		np_rank_filename = '%s/%s/%s_%s_idx_ranked_%s' %(results_dir, sub, sub, tract_name, partition)
+		np.save(np_rank_filename, idx_ranked)
