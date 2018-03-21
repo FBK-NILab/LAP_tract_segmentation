@@ -8,6 +8,7 @@ from dipy.tracking.distances import bundles_distances_mam
 from lap_single_example import compute_kdtree_and_dr_tractogram
 from dissimilarity import compute_dissimilarity, dissimilarity
 from sklearn.neighbors import KDTree
+from sklearn.metrics import roc_auc_score,roc_curve,auc
 
 
 def compute_loss_function(source_tract, ett):
@@ -79,48 +80,14 @@ def streamlines_idx(target_tract, kdt, prototypes, distance_func=bundles_distanc
     D, I = kdt.query(dm_target_tract, k=1)
     if (D > warning_threshold).any():
         print("WARNING (streamlines_idx()): for %s streamlines D > 1.0e-4 !!" % (D > warning_threshold).sum())
-    print(D)
+    #print(D)
     target_tract_idx = I.squeeze()
     return target_tract_idx 
 
 
-def compute_roc_curve_lap(result_lap, true_tract, target_tractogram):
-    """Compute ROC curve.
-    """ 
-    print("Compute the dissimilarity representation of the target tractogram and build the kd-tree.")
-    kdt, prototypes = compute_kdtree_and_dr_tractogram(target_tractogram)
-
-    print("Compute a superset of the true target tract with k-NN.")
-    superset_idx = compute_superset(true_tract, kdt, prototypes)
-
-    print("Retrieving indeces of the true_tract")
-    true_tract_idx = streamlines_idx(true_tract, kdt, prototypes)
-
-    print("Computing FPR and TPR.")
-    y_true = np.zeros(len(superset_idx))
-    correspondent_idx = np.array([np.where(superset_idx==true_tract_idx[i]) for i in range(len(true_tract_idx))])
-    y_true[correspondent_idx] = 1
-
-    min_cost_values = result_lap[1]
-    estimated_tract_idx = result_lap[0]
-    m = np.argsort(min_cost_values)
-
-    c=len(m)
-    y_score = c*np.ones(len(superset_idx))
-
-    f=np.array([np.where(superset_idx==estimated_tract_idx[i]) for i in range(len(estimated_tract_idx))])
-    h=f	
-
-    for i in range(c):
-        y_score[h[i]] = m[i]
-
-    y_score=abs(y_score-c)
-
-    return superset_idx, true_tract_idx, correspondent_idx, y_true, y_score, f, h, m
-
-
 def compute_y_vectors_lap(estimated_tract_idx, estimated_tract_idx_ranked, true_tract, target_tractogram):
-    """Compute y_true and y_score.
+    """Compute y_true and y_score. Here estimated_tract_idx and estimated_tract_idx_ranked refer to the
+       estimated tract obtained from LAP single example, or from LAP multiple examples after refinement.
     """ 
     print("Compute the dissimilarity representation of the target tractogram and build the kd-tree.")
     kdt, prototypes = compute_kdtree_and_dr_tractogram(target_tractogram)
@@ -145,9 +112,39 @@ def compute_y_vectors_lap(estimated_tract_idx, estimated_tract_idx_ranked, true_
     #invert the ranking   
     y_score = abs(y_score-S)
 
-    return superset_idx, true_tract_idx, correspondent_idx_true, correspondent_idx_score, y_true, y_score
+    return y_true, y_score
 
 
+def compute_roc_curve_lap(candidate_idx_ranked, true_tract, target_tractogram):
+    """Compute ROC curve. Here candidate_idx_ranked refers to all the candidate 
+       streamlines obtained from LAP multiple examples before refinement.
+    """ 
+    print("Compute the dissimilarity representation of the target tractogram and build the kd-tree.")
+    kdt, prototypes = compute_kdtree_and_dr_tractogram(target_tractogram)
+
+    print("Retrieving indeces of the true_tract")
+    true_tract_idx = streamlines_idx(true_tract, kdt, prototypes)
+
+    print("Compute y_score.")
+    y_score = np.arange(len(candidate_idx_ranked),0,-1)
+
+    print("Compute y_true.")
+    diff = np.setdiff1d(true_tract_idx, candidate_idx_ranked)
+
+    if (len(diff) != 0):
+	print("Not all the streamlines of the true tract are in the superset. Making the superset bigger.")
+	candidate_idx_ranked = np.concatenate([candidate_idx_ranked, diff])
+	y_score = np.concatenate([y_score, np.zeros(len(diff))])
+
+    y_true = np.zeros(len(candidate_idx_ranked))
+    correspondent_idx_true = np.array([np.where(candidate_idx_ranked==true_tract_idx[i]) for i in range(len(true_tract_idx))])
+    y_true[correspondent_idx_true] = 1
+
+    print("Compute ROC curve and AUC.")
+    fpr, tpr, thresholds = roc_curve(y_true, y_score)
+    AUC = auc(fpr, tpr)
+
+    return fpr, tpr, AUC
 
 
 
