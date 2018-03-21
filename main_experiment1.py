@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 if __name__ == '__main__':
 
     experiment = 'exp1' #'test' #'exp1'
-    sub_list = ['983773', '990366', '991267'] #['993675', '996782'] #
+    sub_list = ['993675', '996782'] #['983773', '990366', '991267'] # #
     tract_name_list = ['Left_Arcuate', 'Callosum_Forceps_Minor'] #, 'Callosum_Forceps_Minor', 'Right_Cingulum_Cingulate', 'Callosum_Forceps_Major']
     partition_list = ['A12', 'A16'] #['A1', 'A4', 'A8'] #, 
     src_dir = '/N/dc2/projects/lifebid/giulia/data'

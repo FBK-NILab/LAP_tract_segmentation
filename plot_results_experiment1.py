@@ -1,5 +1,4 @@
-"""Plot the results of experiment 1.
-"""
+"""Plot the results of experiment 1."""
 
 from __future__ import print_function
 import nibabel as nib
@@ -13,10 +12,10 @@ import matplotlib.pyplot as plt
 
 if __name__ == '__main__':
 
-    experiment = 'exp1' #'test' #'exp2'
+    experiment = 'exp1' 
     sub_list = ['983773', '990366', '991267', '993675', '996782']
-    tract_name_list = ['Left_Arcuate', 'Callosum_Forceps_Minor']#, 'Right_Cingulum_Cingulate', 'Callosum_Forceps_Major']
-    partition_list = ['A1', 'A4', 'A8'] #, 'A12', 'A16']
+    tract_name_list = ['Left_Arcuate', 'Callosum_Forceps_Minor']
+    partition_list = ['A1', 'A4', 'A8', 'A12', 'A16']
     true_tracts_dir = '/N/dc2/projects/lifebid/giulia/data/HCP3_processed_data_trk'
     results_dir = '/N/dc2/projects/lifebid/giulia/results/%s' %experiment
 
@@ -41,14 +40,6 @@ if __name__ == '__main__':
 
 	    	result_lap = np.load('%s/%s/%s_%s_result_lap_%s.npy' %(results_dir, sub, sub, tract_name, partition))
 	    	DSC_values[s,t,p] = DSC
-	    	
-
-            #debugging
-            DSC, TP, vol_A, vol_B = compute_voxel_measures(estimated_tract, estimated_tract)
-            print("The DSC value is %s (must be 1)" %DSC)
-            DSC, TP, vol_A, vol_B = compute_voxel_measures(true_tract, true_tract)
-            print("The DSC value is %s (must be 1)" %DSC)
-
 
     #computing the mean across the sub
     DSC_values_mean = np.mean(DSC_values, axis=0)
@@ -60,7 +51,7 @@ if __name__ == '__main__':
     plt.figure()
     color_list = ['g', 'r', 'y', 'b']
     markers_list = ['o', '^', '*', 'd']
-    x = [1, 4, 8] #, 12, 16]
+    x = [1, 4, 8, 12, 16]
     for j in range(len(tract_name_list)):
 	plt.errorbar(x, DSC_values_mean[j,:], yerr=DSC_values_std[j,:], c=color_list[j],  marker=markers_list[j],  label=tract_name_list[j])
     plt.xlabel("Number of examples")
