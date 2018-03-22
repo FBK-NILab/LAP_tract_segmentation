@@ -59,7 +59,7 @@ if __name__ == '__main__':
    		plt.ylim([0.0, 1.05])
   		plt.xlabel('False Positive Rate')
   		plt.ylabel('True Positive Rate')
-  		plt.title('ROC curve of estimated %s tract in sub %s from partition %s' %(tract_name, sub, partition))
+  		plt.title('ROC curve %s tract sub %s from %s' %(tract_name, sub, partition))
    		plt.legend(loc="lower right")
    		plt.show()
 
