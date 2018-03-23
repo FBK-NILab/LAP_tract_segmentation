@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 if __name__ == '__main__':
 
     experiment = 'exp1' 
-    sub_list = ['983773', '990366', '991267', '993675', '996782']
+    sub_list = ['990366', '991267', '993675', '996782', '992673', '992774', '995174', '983773']
     tract_name_list = ['Left_Arcuate', 'Callosum_Forceps_Minor']
     partition_list = ['A1', 'A4', 'A8', 'A12', 'A16']
     true_tracts_dir = '/N/dc2/projects/lifebid/giulia/data/HCP3_processed_data_trk'
@@ -37,9 +37,8 @@ if __name__ == '__main__':
 
 	    	DSC, TP, vol_A, vol_B = compute_voxel_measures(estimated_tract, true_tract)	
 	    	print("The DSC value is %s" %DSC)
-
-	    	result_lap = np.load('%s/%s/%s_%s_result_lap_%s.npy' %(results_dir, sub, sub, tract_name, partition))
 	    	DSC_values[s,t,p] = DSC
+
 
     #computing the mean across the sub
     DSC_values_mean = np.mean(DSC_values, axis=0)

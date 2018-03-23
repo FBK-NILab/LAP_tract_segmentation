@@ -12,9 +12,9 @@ import matplotlib.pyplot as plt
 if __name__ == '__main__':
 
     experiment = 'exp3' 
-    sub_list = ['992673', '992774', '995174'] #['993675', '996782'] #['983773', '990366', '991267'] # #
+    sub_list = ['983773', '990366', '991267', '992673', '992774', '995174', '993675', '996782'] 
     tract_name_list = ['Left_Arcuate', 'Callosum_Forceps_Minor'] #, 'Callosum_Forceps_Minor', 'Right_Cingulum_Cingulate', 'Callosum_Forceps_Major']
-    partition_list = ['B8'] #['B1', 'B4', 'B8', 'B12', 'B16'] 
+    partition_list = ['B4', 'B12'] #['B1', 'B4', 'B8', 'B12', 'B16'] 
     src_dir = '/N/dc2/projects/lifebid/giulia/data'
     results_dir = '/N/dc2/projects/lifebid/giulia/results/%s' %experiment
 
@@ -38,3 +38,5 @@ if __name__ == '__main__':
 		idx_ranked = np.load('estimated_bundle_idx_ranked.npy')
 		np_rank_filename = '%s/%s/%s_%s_idx_ranked_%s' %(results_dir, sub, sub, tract_name, partition)
 		np.save(np_rank_filename, idx_ranked)
+
+

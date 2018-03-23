@@ -12,7 +12,7 @@ addpath(genpath('/N/dc2/projects/lifebid/giulia/data'));
 
 
 %variables
-for sub=[720337, 724446, 725751, 727553, 727654, 728454, 729254, 729557]
+for sub=[731140, 732243, 737960, 742549, 748258, 748662, 749058, 749361]
     num_tracts=20;
 
     src_dir = sprintf('/N/dc2/projects/lifebid/giulia/data/HCP3_processed_data/%s',num2str(sub));
