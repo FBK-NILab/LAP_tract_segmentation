@@ -132,7 +132,7 @@ def compute_roc_curve_lap(candidate_idx_ranked, true_tract, target_tractogram):
     diff = np.setdiff1d(true_tract_idx, candidate_idx_ranked)
 
     if (len(diff) != 0):
-	print("Not all the streamlines of the true tract are in the superset. Making the superset bigger.")
+	print("There are %s/%s streamlines of the true tract that aren't in the superset. Making the superset bigger." %(len(diff), len(true_tract_idx)))
 	candidate_idx_ranked = np.concatenate([candidate_idx_ranked, diff])
 	y_score = np.concatenate([y_score, np.zeros(len(diff))])
 

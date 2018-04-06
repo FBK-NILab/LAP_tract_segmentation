@@ -13,8 +13,8 @@ import matplotlib.pyplot as plt
 if __name__ == '__main__':
 
     experiment = 'exp1' 
-    sub_list = ['990366', '991267', '993675', '996782', '992673', '992774', '995174', '983773']
-    tract_name_list = ['Left_Arcuate', 'Callosum_Forceps_Minor']
+    sub_list = ['990366', '991267', '993675', '996782', '992673', '992774', '995174', '983773', '910241', '910443', '911849', '912447', '917255', '917558', '919966']
+    tract_name_list = ['Left_Arcuate', 'Callosum_Forceps_Minor', 'Left_IFOF', 'Left_ILF']
     partition_list = ['A1', 'A4', 'A8', 'A12', 'A16']
     true_tracts_dir = '/N/dc2/projects/lifebid/giulia/data/HCP3_processed_data_trk'
     results_dir = '/N/dc2/projects/lifebid/giulia/results/%s' %experiment
@@ -58,6 +58,7 @@ if __name__ == '__main__':
     plt.title('Mean DSC across %s subjects' %len(sub_list))
     plt.legend(loc=4)
     plt.xlim(0, x[-1]+1)
+    plt.ylim(0, 1)
     plt.show()
 
 
