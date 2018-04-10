@@ -26,7 +26,7 @@ except ImportError:
     from linear_assignment_numpy import LinearAssignment
 
 
-def compute_kdtree_and_dr_tractogram(tractogram, num_prototypes=None):
+def compute_kdtree_and_dr_tractogram(tractogram, num_prototypes=None, distance=bundles_distances_mam):
     """Compute the dissimilarity representation of the target tractogram and 
     build the kd-tree.
     """
