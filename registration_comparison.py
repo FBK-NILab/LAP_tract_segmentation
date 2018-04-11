@@ -26,9 +26,9 @@ if __name__ == '__main__':
 	method = ['rlap']#['nn', 'rlap']
 	k = 500
 
-	basedir = 'miccai2018_dataset/'
-	DSC_mam_nn = np.zeros(len(sub_list), len(sub_list), len(bundle_list), len(registration))
-	DSC_mam_nn = np.zeros(len(sub_list), len(sub_list), len(bundle_list), len(registration))
+	basedir = 'miccai2018_dataset'
+	DSC_nn = np.zeros(len(sub_list), len(bundle_list), len(sub_list), len(registration), len(distance_list))
+	DSC_rlap = np.zeros(len(sub_list), len(bundle_list), len(sub_list), len(registration), len(distance_list))
 
 	for ss, static_sub in enumerate(sub_list):
 		tractogram_dir = 'deterministic_tracking_dipy_FNAL'
@@ -47,23 +47,55 @@ if __name__ == '__main__':
 			print("Compute the dissimilarity representation of the static tractogram and build the kd-tree.")
 			kdt, prototypes = compute_kdtree_and_dr_tractogram(static_tractogram, distance=distance_func)
 
-			for ms, moving_sub in enumerate(sub_list):
-				if moving_sub != static_sub:
-					for b, bundle in enumerate(bundle_list):
+			for b, bundle in enumerate(bundle_list):
+				wmql_dir = 'wmql_FNALW' 
+				true_bundle_filename = '%s/%s/sub-%s/sub-%s_var-FNALW_set-%s_tract.trk' %(basedir, wmql_dir, static_sub, static_sub, bundle)
+				true_bundle = nib.streamlines.load(true_bundle_filename)
+				true_bundle = true_bundle.streamlines
+
+				for ms, moving_sub in enumerate(sub_list):
+					if moving_sub != static_sub:
 						for r, reg in enumerate(registration):
 							if reg == 'slr':
-								slr_dir = basedir + 'streamline_based_affine_registration'
-								bundle_filename = '%s/sub-%s/sub-%s_var-slr_space-%s_set-%s_tract.trk' %(slr_dir, moving_sub, moving_sub, static_sub, bundle)
+								slr_dir = basedir + '/streamline_based_affine_registration'
+								bundle_filename = '/%s/sub-%s/sub-%s_var-slr_space-%s_set-%s_tract.trk' %(slr_dir, moving_sub, moving_sub, static_sub, bundle)
 							else:
-								ants_dir = basedir + 'voxel_based_registration'
-								bundle_filename = '%s/sub-%s/sub-%s_space_%s_var-%s_set-%s_tract.trk' %(ants_dir, moving_sub, moving_sub, static_sub, reg, bundle)
+								ants_dir = basedir + '/voxel_based_registration'
+								bundle_filename = '/%s/sub-%s/sub-%s_space_%s_var-%s_set-%s_tract.trk' %(ants_dir, moving_sub, moving_sub, static_sub, reg, bundle)
+							example_bundle = nib.streamlines.load(bundle_filename)
+							example_bundle = example_bundle.streamlines
+							print("Compute the dissimilarity of the aligned example bundle with the prototypes of static tractogram.")
+							moving_example = np.array(example_bundle, dtype=np.object)
+							dm_moving_example = distance_func(moving_example, prototypes)
+
 							for m, met in enumerate(method):
 								if met == 'rlap':
-									example_bundle = nib.streamlines.load(bundle_filename)
-									example_bundle = example_bundle.streamlines
-									print("Compute the dissimilarity of the aligned example bundle with the prototypes of static tractogram.")
-									moving_example = np.array(example_bundle, dtype=np.object)
-									dm_moving_example = distance_func(moving_example, prototypes)
 									print("Segmentation as Rectangular linear Assignment Problem (RLAP).")
 									estimated_bundle_idx, min_cost_values = RLAP(kdt, k, dm_moving_example, moving_example, static_tractogram, distance_func)
-									#estimated_bundle = static_tractogram[estimated_bundle_idx]
+									estimated_bundle = static_tractogram[estimated_bundle_idx]
+									print("Computing the DSC value.")
+									DSC, TP, vol_A, vol_B = compute_voxel_measures(estimated_bundle, true_bundle)	
+	    							print("The DSC value is %s" %DSC)
+	    							DSC_rlap[ss, b, ms, r, d] = DSC
+	    						if met == 'nn':
+	    							print("Segmentation as Nearest Neighbor.")	
+	    							estimated_bundle_idx = NN(kdt, dm_moving_example)
+	    							estimated_bundle = static_tractogram[estimated_bundle_idx]
+									print("Computing the DSC value.")
+									DSC, TP, vol_A, vol_B = compute_voxel_measures(estimated_bundle, true_bundle)	
+	    							print("The DSC value is %s" %DSC)
+	    							DSC_nn[ss, b, ms, r, d] = DSC
+
+	# PLOT
+	
+	#delete the zero-values
+	DSC_nn_masked = np.ma.masked_equal(DSC_nn, 0) 
+	DSC_rlap_masked = np.ma.masked_equal(DSC_rlap, 0)  
+
+	#compute the mean across the subjects: returns a 3D matrix
+	DSC_mean_nn = np.mean(DSC_nn_masked, axis=(0,2))
+	DSC_mean_rlap = np.mean(DSC_rlap_masked, axis=(0,2))
+
+							
+
+
