@@ -19,16 +19,16 @@ def NN(kdt, dm_source_tract):
 
 if __name__ == '__main__':
 
-	sub_list = ['100307', '109123']#[100307, 109123, 131217, 199655, 341834, 599671, 601127, 756055, 770352, 917255]
+	sub_list = ['100307', '109123']#, '199655']#[100307, 109123, 131217, 199655, 341834, 599671, 601127, 756055, 770352, 917255]
 	distance_list = ['mam']#['mam', 'varifolds']
-	bundle_list = ['ifofL']#['cbL', 'cbR', 'cstL', 'cstR', 'ifofL', 'ifofR', 'thprefL', 'thprefR', 'ufL', 'ufR']
-	registration = ['slr']#['slr', 'ant4fa', 'ant4t1w']
-	method = ['rlap']#['nn', 'rlap']
+	bundle_list = ['ifofL']#, 'cbL', 'cstL']#['cbL', 'cbR', 'cstL', 'cstR', 'ifofL', 'ifofR', 'thprefL', 'thprefR', 'ufL', 'ufR']
+	registration = ['slr', 'ant4fa', 'ant4t1w']
+	method = ['nn', 'rlap']
 	k = 500
 
 	basedir = 'miccai2018_dataset'
-	DSC_nn = np.zeros(len(sub_list), len(bundle_list), len(sub_list), len(registration), len(distance_list))
-	DSC_rlap = np.zeros(len(sub_list), len(bundle_list), len(sub_list), len(registration), len(distance_list))
+	DSC_nn = np.zeros((len(sub_list), len(bundle_list), len(sub_list), len(registration), len(distance_list)))
+	DSC_rlap = np.zeros((len(sub_list), len(bundle_list), len(sub_list), len(registration), len(distance_list)))
 
 	for ss, static_sub in enumerate(sub_list):
 		tractogram_dir = 'deterministic_tracking_dipy_FNAL'
@@ -58,10 +58,10 @@ if __name__ == '__main__':
 						for r, reg in enumerate(registration):
 							if reg == 'slr':
 								slr_dir = basedir + '/streamline_based_affine_registration'
-								bundle_filename = '/%s/sub-%s/sub-%s_var-slr_space-%s_set-%s_tract.trk' %(slr_dir, moving_sub, moving_sub, static_sub, bundle)
+								bundle_filename = '%s/sub-%s/sub-%s_var-slr_space-%s_set-%s_tract.trk' %(slr_dir, moving_sub, moving_sub, static_sub, bundle)
 							else:
 								ants_dir = basedir + '/voxel_based_registration'
-								bundle_filename = '/%s/sub-%s/sub-%s_space_%s_var-%s_set-%s_tract.trk' %(ants_dir, moving_sub, moving_sub, static_sub, reg, bundle)
+								bundle_filename = '%s/sub-%s/sub-%s_space_%s_var-%s_set-%s_tract.trk' %(ants_dir, moving_sub, moving_sub, static_sub, reg, bundle)
 							example_bundle = nib.streamlines.load(bundle_filename)
 							example_bundle = example_bundle.streamlines
 							print("Compute the dissimilarity of the aligned example bundle with the prototypes of static tractogram.")
@@ -75,16 +75,16 @@ if __name__ == '__main__':
 									estimated_bundle = static_tractogram[estimated_bundle_idx]
 									print("Computing the DSC value.")
 									DSC, TP, vol_A, vol_B = compute_voxel_measures(estimated_bundle, true_bundle)	
-	    							print("The DSC value is %s" %DSC)
-	    							DSC_rlap[ss, b, ms, r, d] = DSC
-	    						if met == 'nn':
-	    							print("Segmentation as Nearest Neighbor.")	
-	    							estimated_bundle_idx = NN(kdt, dm_moving_example)
-	    							estimated_bundle = static_tractogram[estimated_bundle_idx]
+									print("The DSC value is %s" %DSC)
+									DSC_rlap[ss, b, ms, r, d] = DSC
+								if met == 'nn':
+									print("Segmentation as Nearest Neighbor.")	
+									estimated_bundle_idx = NN(kdt, dm_moving_example)
+									estimated_bundle = static_tractogram[estimated_bundle_idx]
 									print("Computing the DSC value.")
-									DSC, TP, vol_A, vol_B = compute_voxel_measures(estimated_bundle, true_bundle)	
-	    							print("The DSC value is %s" %DSC)
-	    							DSC_nn[ss, b, ms, r, d] = DSC
+									DSC, TP, vol_A, vol_B = compute_voxel_measures(estimated_bundle, true_bundle)
+									print("The DSC value is %s" %DSC)																																																																																																																																																								
+									DSC_nn[ss, b, ms, r, d] = DSC
 
 	# PLOT
 	
@@ -95,7 +95,27 @@ if __name__ == '__main__':
 	#compute the mean across the subjects: returns a 3D matrix
 	DSC_mean_nn = np.mean(DSC_nn_masked, axis=(0,2))
 	DSC_mean_rlap = np.mean(DSC_rlap_masked, axis=(0,2))
+	DSC_std_nn = np.std(DSC_nn_masked, axis=(0,2))
+	DSC_std_rlap = np.std(DSC_rlap_masked, axis=(0,2))
 
-							
+	from basic_units import cm, inch
+
+	fig, ax = plt.subplots()
+
+	ind = np.arange(1)    # the x locations for the groups
+	width = 0.3        # the width of the bars
+	p1 = ax.bar(ind, DSC_mean_nn[:,0,0][0], width, color='r', bottom=0*cm, yerr=DSC_std_nn[:,0,0][0])
+	p2 = ax.bar(ind + width, DSC_mean_nn[:,1,0][0], width, color='y', bottom=0*cm, yerr=DSC_std_nn[:,1,0][0])
+	p3 = ax.bar(ind + 2*width, DSC_mean_nn[:,2,0][0], width, color='g', bottom=0*cm, yerr=DSC_std_nn[:,2,0][0])
+
+	ax.set_title('Registration comparison with NN')
+	ax.set_xticks(ind + 3*width / 2)
+	ax.set_xticklabels(('tract1', 'G2', 'G3'))
+
+	ax.legend((p1[0], p2[0], p3[0]), ('slr', 'ant4fa', 'ant4t1w'))
+	ax.yaxis.set_units('DSC')
+	ax.autoscale_view()
+
+	plt.show()							
 
 
