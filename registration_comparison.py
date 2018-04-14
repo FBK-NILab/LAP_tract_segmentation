@@ -21,7 +21,7 @@ if __name__ == '__main__':
 
 	sub_list = ['100307', '109123', '131217', '199655']#[100307, 109123, 131217, 199655, 341834, 599671, 601127, 756055, 770352, 917255]
 	distance_list = ['mam']#['mam', 'varifolds']
-	bundle_list = ['ifofL', 'thprefL', 'cstL']#['cbL', 'cbR', 'cstL', 'cstR', 'ifofL', 'ifofR', 'thprefL', 'thprefR', 'ufL', 'ufR']
+	bundle_list = ['ifofR', 'thprefR', 'cstR']#['cbL', 'cbR', 'cstL', 'cstR', 'ifofL', 'ifofR', 'thprefL', 'thprefR', 'ufL', 'ufR']
 	registration = ['slr', 'ant4t1w', 'ant4fa']
 	method = ['nn', 'rlap']
 	k = 500
@@ -87,8 +87,8 @@ if __name__ == '__main__':
 									DSC_nn[ss, b, ms, r, d] = DSC
 
 
-	np.save('DSC_nn', DSC_nn)
-	np.save('DSC_rlap', DSC_rlap)
+	np.save('DSC_nn_R', DSC_nn)
+	np.save('DSC_rlap_R', DSC_rlap)
 	
 	#delete the zero-values
 	DSC_nn_masked = np.ma.masked_equal(DSC_nn, 0) 
@@ -108,17 +108,34 @@ if __name__ == '__main__':
 	fig, ax = plt.subplots()
 
 	ind = np.arange(3)    # the x locations for the groups
-	width = 0.3        # the width of the bars
-	p1 = ax.bar(ind, DSC_mean_nn[:,0,0][0], width, color='r', bottom=0*cm, yerr=DSC_std_nn[:,0,0][0])
-	p2 = ax.bar(ind + width, DSC_mean_nn[:,1,0][0], width, color='y', bottom=0*cm, yerr=DSC_std_nn[:,1,0][0])
-	p3 = ax.bar(ind + 2*width, DSC_mean_nn[:,2,0][0], width, color='g', bottom=0*cm, yerr=DSC_std_nn[:,2,0][0])
+	width = 0.25        # the width of the bars
+	p1 = ax.bar(ind, DSC_mean_nn[:,0,0], width, color='r', bottom=0*cm, yerr=DSC_std_nn[:,0,0])
+	p2 = ax.bar(ind + width, DSC_mean_nn[:,1,0], width, color='y', bottom=0*cm, yerr=DSC_std_nn[:,1,0])
+	p3 = ax.bar(ind + 2*width, DSC_mean_nn[:,2,0], width, color='g', bottom=0*cm, yerr=DSC_std_nn[:,2,0])
 
-	ax.set_title('Registration comparison with NN')
+	ax.set_title('Registration comparison with NN (12 pairs)')
 	ax.set_xticks(ind + 3*width / 2)
-	ax.set_xticklabels(('ifofL', 'thprefL', 'cstL'))
+	ax.set_xticklabels(bundle_list)
 
-	ax.legend((p1[0], p2[0], p3[0]), ('slr', 'ant4fa', 'ant4t1w'))
-	ax.yaxis.set_units('DSC')
+	ax.legend((p1[0], p2[0], p3[0]), ('slr', 'ant4fa', 'ant4t1w'), loc=4)
+	ax.set_ylabel('DSC')
+	ax.autoscale_view()
+
+
+	fig, ax = plt.subplots()
+
+	ind = np.arange(3)    # the x locations for the groups
+	width = 0.25        # the width of the bars
+	p1 = ax.bar(ind, DSC_mean_rlap[:,0,0], width, color='r', bottom=0*cm, yerr=DSC_std_rlap[:,0,0])
+	p2 = ax.bar(ind + width, DSC_mean_rlap[:,1,0], width, color='y', bottom=0*cm, yerr=DSC_std_rlap[:,1,0])
+	p3 = ax.bar(ind + 2*width, DSC_mean_rlap[:,2,0], width, color='g', bottom=0*cm, yerr=DSC_std_rlap[:,2,0])
+
+	ax.set_title('Registration comparison with RLAP (12 pairs)')
+	ax.set_xticks(ind + 3*width / 2)
+	ax.set_xticklabels(bundle_list)
+
+	ax.legend((p1[0], p2[0], p3[0]), ('slr', 'ant4fa', 'ant4t1w'), loc=4)
+	ax.set_ylabel('DSC')
 	ax.autoscale_view()
 
 	plt.show()							
