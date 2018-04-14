@@ -19,10 +19,10 @@ def NN(kdt, dm_source_tract):
 
 if __name__ == '__main__':
 
-	sub_list = ['100307', '109123']#, '199655']#[100307, 109123, 131217, 199655, 341834, 599671, 601127, 756055, 770352, 917255]
+	sub_list = ['100307', '109123', '131217', '199655']#[100307, 109123, 131217, 199655, 341834, 599671, 601127, 756055, 770352, 917255]
 	distance_list = ['mam']#['mam', 'varifolds']
-	bundle_list = ['ifofL']#, 'cbL', 'cstL']#['cbL', 'cbR', 'cstL', 'cstR', 'ifofL', 'ifofR', 'thprefL', 'thprefR', 'ufL', 'ufR']
-	registration = ['slr', 'ant4fa', 'ant4t1w']
+	bundle_list = ['ifofL', 'thprefL', 'cstL']#['cbL', 'cbR', 'cstL', 'cstR', 'ifofL', 'ifofR', 'thprefL', 'thprefR', 'ufL', 'ufR']
+	registration = ['slr', 'ant4t1w', 'ant4fa']
 	method = ['nn', 'rlap']
 	k = 500
 
@@ -86,7 +86,9 @@ if __name__ == '__main__':
 									print("The DSC value is %s" %DSC)																																																																																																																																																								
 									DSC_nn[ss, b, ms, r, d] = DSC
 
-	# PLOT
+
+	np.save('DSC_nn', DSC_nn)
+	np.save('DSC_rlap', DSC_rlap)
 	
 	#delete the zero-values
 	DSC_nn_masked = np.ma.masked_equal(DSC_nn, 0) 
@@ -98,11 +100,14 @@ if __name__ == '__main__':
 	DSC_std_nn = np.std(DSC_nn_masked, axis=(0,2))
 	DSC_std_rlap = np.std(DSC_rlap_masked, axis=(0,2))
 
+
+	# PLOT
+
 	from basic_units import cm, inch
 
 	fig, ax = plt.subplots()
 
-	ind = np.arange(1)    # the x locations for the groups
+	ind = np.arange(3)    # the x locations for the groups
 	width = 0.3        # the width of the bars
 	p1 = ax.bar(ind, DSC_mean_nn[:,0,0][0], width, color='r', bottom=0*cm, yerr=DSC_std_nn[:,0,0][0])
 	p2 = ax.bar(ind + width, DSC_mean_nn[:,1,0][0], width, color='y', bottom=0*cm, yerr=DSC_std_nn[:,1,0][0])
@@ -110,7 +115,7 @@ if __name__ == '__main__':
 
 	ax.set_title('Registration comparison with NN')
 	ax.set_xticks(ind + 3*width / 2)
-	ax.set_xticklabels(('tract1', 'G2', 'G3'))
+	ax.set_xticklabels(('ifofL', 'thprefL', 'cstL'))
 
 	ax.legend((p1[0], p2[0], p3[0]), ('slr', 'ant4fa', 'ant4t1w'))
 	ax.yaxis.set_units('DSC')
