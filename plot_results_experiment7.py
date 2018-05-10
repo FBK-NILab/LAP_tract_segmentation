@@ -7,10 +7,16 @@ import matplotlib.pyplot as plt
 if __name__ == '__main__':
 
 	#load the matrices
-	DSC_rlap_frenet = np.load('DSC_rlap_frenet_25')
-	wDSC_rlap_frenet = np.load('wDSC_rlap_frenet_25')
-	J_rlap_frenet = np.load('J_rlap_frenet_25')
-	sensitivity_rlap_frenet = np.load('sensitivity_rlap_frenet_25')
+	DSC_rlap_frenet = np.load('DSC_rlap_frenet_uf25.npy')
+	wDSC_rlap_frenet = np.load('wDSC_rlap_frenet_uf25.npy')
+	J_rlap_frenet = np.load('J_rlap_frenet_uf25.npy')
+	sensitivity_rlap_frenet = np.load('sensitivity_rlap_frenet_uf25.npy')
+
+	#resize since the actual pairs are 10
+	DSC_rlap_frenet = DSC_rlap_frenet[0:2,:,:,:]
+	wDSC_rlap_frenet = wDSC_rlap_frenet[0:2,:,:,:]
+	J_rlap_frenet =J_rlap_frenet[0:2,:,:,:]
+	sensitivity_rlap_frenet = sensitivity_rlap_frenet[0:2,:,:,:]
 
 	#compute the mean across the subjects: returns a 2D matrix
 	DSC_mean = np.mean(DSC_rlap_frenet, axis=(0,2))
@@ -21,19 +27,18 @@ if __name__ == '__main__':
 	#compute the std across the subjects: returns a 2D matrix
 	DSC_std = np.std(DSC_rlap_frenet, axis=(0,2))
 	wDSC_std = np.std(wDSC_rlap_frenet, axis=(0,2))
-	J_mean = np.std(J_rlap_frenet, axis=(0,2))
-	sensitivity_mean = np.std(sensitivity_rlap_frenet, axis=(0,2))
+	J_std = np.std(J_rlap_frenet, axis=(0,2))
+	sensitivity_std = np.std(sensitivity_rlap_frenet, axis=(0,2))
 
 
 	# PLOT
 
 	from basic_units import cm, inch
 
-	tract_name_list = ['Left_IFOF', 'Left_ILF', 'Left_Arcuate', 'Callosum_Forceps_Minor']
+	tract_name_list = ['Right_UF', 'Left_UF']#['Left_IFOF', 'Left_ILF', 'Left_Arcuate', 'Callosum_Forceps_Minor']
 	h_list = [1, 0.8, 0.6, 0.4, 0.2, 0]
 	ind = np.arange(len(tract_name_list))    # the x locations for the groups
 	width = 0.8 / len(h_list)       # the width of the bars
-
 
 	fig, ax = plt.subplots()
 
@@ -46,9 +51,9 @@ if __name__ == '__main__':
 
 	ax.set_title('mean DSC across 25 pairs of subjects')
 	ax.set_xticks(ind + len(h_list)*width / 2)
-	ax.set_xticklabels(h_list)
+	ax.set_xticklabels(tract_name_list)
 	ax.set_ylim(0,1)
-	ax.legend((p1[0], p2[0], p3[0], p4[0], p5[0], p6[0]), ('h=1', 'h=0.8', 'h=0.6', 'h=0.4', 'h=0.2', 'h=0'), loc=4)
+	ax.legend((p1[0], p2[0], p3[0], p4[0], p5[0], p6[0]), ('h=1', 'h=0.8', 'h=0.6', 'h=0.4', 'h=0.2', 'h=0'), loc=0)
 	ax.set_ylabel('DSC')
 	ax.autoscale_view()
 
@@ -64,11 +69,12 @@ if __name__ == '__main__':
 
 	ax.set_title('mean wDSC across 25 pairs of subjects')
 	ax.set_xticks(ind + len(h_list)*width / 2)
-	ax.set_xticklabels(h_list)
+	ax.set_xticklabels(tract_name_list)
 	ax.set_ylim(0,1)
-	ax.legend((p1[0], p2[0], p3[0], p4[0], p5[0], p6[0]), ('h=1', 'h=0.8', 'h=0.6', 'h=0.4', 'h=0.2', 'h=0'), loc=4)
+	ax.legend((p1[0], p2[0], p3[0], p4[0], p5[0], p6[0]), ('h=1', 'h=0.8', 'h=0.6', 'h=0.4', 'h=0.2', 'h=0'), loc=0)
 	ax.set_ylabel('wDSC')
 	ax.autoscale_view()
+
 
 
 	fig, ax = plt.subplots()
@@ -82,9 +88,9 @@ if __name__ == '__main__':
 
 	ax.set_title('mean Jaccard index across 25 pairs of subjects')
 	ax.set_xticks(ind + len(h_list)*width / 2)
-	ax.set_xticklabels(h_list)
+	ax.set_xticklabels(tract_name_list)
 	ax.set_ylim(0,1)
-	ax.legend((p1[0], p2[0], p3[0], p4[0], p5[0], p6[0]), ('h=1', 'h=0.8', 'h=0.6', 'h=0.4', 'h=0.2', 'h=0'), loc=4)
+	ax.legend((p1[0], p2[0], p3[0], p4[0], p5[0], p6[0]), ('h=1', 'h=0.8', 'h=0.6', 'h=0.4', 'h=0.2', 'h=0'), loc=0)
 	ax.set_ylabel('J')
 	ax.autoscale_view()
 
@@ -100,9 +106,9 @@ if __name__ == '__main__':
 
 	ax.set_title('mean sensitivity across 25 pairs of subjects')
 	ax.set_xticks(ind + len(h_list)*width / 2)
-	ax.set_xticklabels(h_list)
+	ax.set_xticklabels(tract_name_list)
 	ax.set_ylim(0,1)
-	ax.legend((p1[0], p2[0], p3[0], p4[0], p5[0], p6[0]), ('h=1', 'h=0.8', 'h=0.6', 'h=0.4', 'h=0.2', 'h=0'), loc=4)
+	ax.legend((p1[0], p2[0], p3[0], p4[0], p5[0], p6[0]), ('h=1', 'h=0.8', 'h=0.6', 'h=0.4', 'h=0.2', 'h=0'), loc=0)
 	ax.set_ylabel('sensitivity')
 	ax.autoscale_view()
 
