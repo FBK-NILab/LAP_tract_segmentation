@@ -7,6 +7,9 @@ import dipy
 import os
 from dipy.tracking.utils import length
 from dipy.tracking.streamline import set_number_of_points
+from compute_streamline_measures import compute_roc_curve_lap, compute_y_vectors_lap
+import matplotlib.pyplot as plt
+from sklearn.metrics import roc_curve, auc
 
 
 def ranking_schema(superset_estimated_target_tract_idx, superset_estimated_target_tract_cost):
@@ -40,7 +43,7 @@ def resample_tractogram(tractogram, step_size):
     return tractogram_res
 
 
-def save_bundle(estimated_bundle_idx, static_tractogram_Tractogram, static_tractogram, out_filename):
+def save_tract(estimated_bundle_idx, static_tractogram_Tractogram, static_tractogram, out_filename):
 
 	extension = os.path.splitext(out_filename)[1]
 	aff_vox_to_ras = static_tractogram_Tractogram.affine
@@ -83,8 +86,7 @@ def save_bundle(estimated_bundle_idx, static_tractogram_Tractogram, static_tract
 if __name__ == '__main__':
 
     experiment = 'exp12'
-    sub_list = ['910241', '910443', '911849']#['987337','9991267']#
-    example_list = ['500222', '506234', '510225']#['510326', '510328']#
+    sub_list = ['910443']#['910241']#['991267']#['983773',#['910241', '910443', '911849']
     #tract_name_list = ['Left_Corticospinal', 'Right_Corticospinal', 'Left_IFOF', 'Right_IFOF', 'Left_Thalamic_Radiation', 'Right_Thalamic_Radiation', 'Left_Arcuate', 'Right_Arcuate']
     tract_name_list = ['Left_pArc', 'Right_pArc', 'Left_TPC', 'Right_TPC', 'Left_MdLF-SPL', 'Right_MdLF-SPL', 'Left_MdLF-Ang', 'Right_MdLF-Ang']
     #true_tracts_dir = '/N/dc2/projects/lifebid/giulia/data/HCP3_processed_data_trk_ens_prob_afq'
@@ -100,9 +102,9 @@ if __name__ == '__main__':
 	static_tractogram = '%s/input_result_lap/%s_track.trk' %(results_dir, sub)
 	static_tractogram_Tractogram = nib.streamlines.load(static_tractogram)
 	static_tractogram = static_tractogram_Tractogram.streamlines
-	print("Resampling tractogram with step size = 0.625 mm")
-	static_tractogram_res = resample_tractogram(static_tractogram, step_size=0.625)
-	static_tractogram = np.array(static_tractogram_res, dtype=np.object)
+	#print("Resampling tractogram with step size = 0.625 mm")
+	#static_tractogram_res = resample_tractogram(static_tractogram, step_size=0.625)
+	#static_tractogram = np.array(static_tractogram_res, dtype=np.object)
 
     	for t, tract_name in enumerate(tract_name_list):
 	
@@ -111,7 +113,7 @@ if __name__ == '__main__':
 	    true_tract = true_tract.streamlines
 	    len_target = len(true_tract)
 	
-	    #result_lap_filename = '%s/input_result_lap/%s_%s_result_lap_afq5_0625.npy' %(results_dir, sub, tract_name)
+	    #result_lap_filename = '%s/input_result_lap/%s_%s_result_lap_afq5_res.npy' %(results_dir, sub, tract_name)
 	    result_lap_filename = '%s/input_result_lap/%s_%s_result_lap_wma5_res.npy' %(results_dir, sub, tract_name)
 	    result_lap = np.load(result_lap_filename)
    	    result_lap = np.array(result_lap)
@@ -120,19 +122,36 @@ if __name__ == '__main__':
 	    example_bundle_len_med = np.median(np.hstack(result_lap[:,0,2]))
 	    estimated_bundle_idx_ranked = ranking_schema(estimated_bundle_idx, min_cost_values)
 
-	    print("Esimating %s with original LAP" %tract_name)
-	    estimated_bundle_idx_ranked_med = estimated_bundle_idx_ranked[0:int(example_bundle_len_med)]
-	    #out_filename = '%s/%s/%s_%s_tract_afq5_0625_orig.tck' %(results_dir, sub, sub, tract_name)
-	    out_filename = '%s/%s/%s_%s_tract_wma5_0625_orig.tck' %(results_dir, sub, sub, tract_name)
-	    save_bundle(estimated_bundle_idx_ranked_med, static_tractogram_Tractogram, static_tractogram, out_filename)
+	    print("Estimating %s with original LAP" %tract_name)
+	    #estimated_bundle_idx_ranked_med = estimated_bundle_idx_ranked[0:int(example_bundle_len_med)]
+	    out_filename = '%s/%s/%s_%s_tract_afq5_0625_orig.tck' %(results_dir, sub, sub, tract_name)
+	    #out_filename = '%s/%s/%s_%s_tract_wma5_0625_orig.tck' %(results_dir, sub, sub, tract_name)
+	    #save_tract(estimated_bundle_idx_ranked_med, static_tractogram_Tractogram, static_tractogram, out_filename)
 
-	    print("Esimating %s with fake LAP" %tract_name)
-	    estimated_bundle_idx_ranked_fake = estimated_bundle_idx_ranked[0:len_target]
-	    #out_filename = '%s/%s/%s_%s_tract_afq5_0625_fake.tck' %(results_dir, sub, sub, tract_name)
-	    out_filename = '%s/%s/%s_%s_tract_wma5_0625_fake.tck' %(results_dir, sub, sub, tract_name)
-	    save_bundle(estimated_bundle_idx_ranked_fake, static_tractogram_Tractogram, static_tractogram, out_filename)
+	    print("Estimating %s with fake LAP" %tract_name)
+	    #estimated_bundle_idx_ranked_fake = estimated_bundle_idx_ranked[0:len_target]
+	    out_filename = '%s/%s/%s_%s_tract_afq5_0625_fake.tck' %(results_dir, sub, sub, tract_name)
+	    #out_filename = '%s/%s/%s_%s_tract_wma5_0625_fake.tck' %(results_dir, sub, sub, tract_name)
+	    #save_tract(estimated_bundle_idx_ranked_fake, static_tractogram_Tractogram, static_tractogram, out_filename)
 
-
+	    #plot ROC curve
+	    print("Computing the ROC curve")
+	    #true_tract_res = resample_tractogram(true_tract, step_size=0.625)
+	    #true_tract = np.array(true_tract_res, dtype=np.object)
+	    fpr, tpr, AUC = compute_roc_curve_lap(estimated_bundle_idx_ranked, true_tract, static_tractogram)
+	    # Plot of the ROC curve
+	    plt.interactive(True)
+    	    plt.figure()
+    	    lw = 1
+    	    plt.plot(fpr, tpr, color='darkorange', lw=lw, label='ROC curve (area = %0.2f)' %AUC)
+   	    plt.plot([0, 1], [0, 1], color='navy', lw=lw, linestyle='--')
+   	    plt.xlim([0.0, 1.0])
+   	    plt.ylim([0.0, 1.05])
+  	    plt.xlabel('False Positive Rate')
+  	    plt.ylabel('True Positive Rate')
+  	    plt.title('ROC curve %s tract sub %s from 5 examples' %(tract_name, sub))
+   	    plt.legend(loc="lower right")
+   	    plt.show()
 
 	
 

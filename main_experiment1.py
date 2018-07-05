@@ -12,15 +12,16 @@ import matplotlib.pyplot as plt
 if __name__ == '__main__':
 
     experiment = 'exp1' #'test' #'exp1'
-    sub_list = ['990366', '991267', '993675', '996782', '992673', '992774', '995174', '983773', '910241', '910443', '911849', '912447', '917255', '917558', '919966']
-    tract_name_list = ['Left_IFOF', 'Left_ILF'] #['Left_Arcuate', 'Callosum_Forceps_Minor'] # 'Right_Cingulum_Cingulate', 'Callosum_Forceps_Major']
-    partition_list = ['A1', 'A4', 'A8', 'A12', 'A16'] 
+    sub_list = ['990366', '991267', '983773', '910241', '910443', '911849', '912447', '917255', '917558', '919966'] #['993675', '995174', '996782', '992673', '992774'] 
+    tract_name_list = ['Left_Uncinate', 'Left_Cingulum_Hippocampus', 'Left_IFOF', 'Left_ILF', 'Left_Arcuate', 'Callosum_Forceps_Minor'] # 'Right_Cingulum_Cingulate', 'Callosum_Forceps_Major']
+    partition_list = ['AB32'] #['A1', 'A4', 'A8', 'A12', 'A16'] 
     src_dir = '/N/dc2/projects/lifebid/giulia/data'
     results_dir = '/N/dc2/projects/lifebid/giulia/results/%s' %experiment
 
     for s, sub in enumerate(sub_list):
 	
 	static_tractogram = '%s/HCP3_processed_data_trk/%s/%s_output_fe.trk' %(src_dir, sub, sub)
+	print("-------------------------------------------------> Target subject: %s" %sub)
 
     	for t, tract_name in enumerate(tract_name_list):
 

@@ -20,7 +20,7 @@ if __name__ == '__main__':
 
     experiment = 'exp7' #'test' #'exp1'
     sub_list = ['990366', '991267', '992673', '992774', '993675']#, '995174', '996782']
-    tract_name_list = ['Left_IFOF', 'Left_ILF', 'Left_Arcuate', 'Callosum_Forceps_Minor'] # 'Right_Cingulum_Cingulate', 'Callosum_Forceps_Major']
+    tract_name_list = ['Right_Uncinate', 'Left_Uncinate']#['Left_IFOF', 'Left_ILF', 'Left_Arcuate', 'Callosum_Forceps_Minor'] 
     example_list = ['615441', '615744', '616645', '617748', '618952'] 
     src_dir = '/N/dc2/projects/lifebid/giulia/data/HCP3_processed_data_trk'
     results_dir = '/N/dc2/projects/lifebid/giulia/results/%s' %experiment
@@ -35,7 +35,7 @@ if __name__ == '__main__':
     J_rlap_frenet = np.zeros((len(sub_list), len(tract_name_list), len(example_list), len(h_list)))
     sensitivity_rlap_frenet = np.zeros((len(sub_list), len(tract_name_list), len(example_list), len(h_list)))
 
-    for s, sub in enumerate(sub_list):
+    for ss, sub in enumerate(sub_list):
 	
 	static_tractogram_filename = '%s/%s/%s_output_fe.trk' %(src_dir, sub, sub)
 	static_tractogram = nib.streamlines.load(static_tractogram_filename)
@@ -43,7 +43,7 @@ if __name__ == '__main__':
 	print("Compute the dissimilarity representation of the static tractogram of subject %s and build the kd-tree." %sub)
 	kdt, prototypes = compute_kdtree_and_dr_tractogram(static_tractogram, distance=distance_func)
 
-    	for t, tract_name in enumerate(tract_name_list):
+    	for tt, tract_name in enumerate(tract_name_list):
 
 	    true_tract_filename = '%s/%s/%s_%s_tract.trk' %(src_dir, sub, sub, tract_name)
 	    true_tract = nib.streamlines.load(true_tract_filename)
@@ -51,7 +51,7 @@ if __name__ == '__main__':
 	    nib.streamlines.save(true_tract.tractogram, tck_filename)
 	    true_tract = true_tract.streamlines
 
-    	    for e, example in enumerate(example_list):
+    	    for ee, example in enumerate(example_list):
 	
 		moving_example_filename = '%s/%s/%s_%s_tract.trk' %(src_dir, example, example, tract_name)	
 		moving_example = nib.streamlines.load(moving_example_filename)
@@ -94,12 +94,12 @@ if __name__ == '__main__':
 	    		print("The Jaccard index is %s" %J)
 	    		print("The sensitivity is %s" %sensitivity)
 			
-			DSC_rlap_frenet[s, t, e, hh] = DSC
-    			wDSC_rlap_frenet[s, t, e, hh] = wDSC
-    			J_rlap_frenet[s, t, e, hh] = J
-    			sensitivity_rlap_frenet[s, t, e, hh] = sensitivity
-			np.save('DSC_rlap_frenet_25', DSC_rlap_frenet)
-			np.save('wDSC_rlap_frenet_25', wDSC_rlap_frenet)
-			np.save('J_rlap_frenet_25', J_rlap_frenet)
-			np.save('sensitivity_rlap_frenet_25', sensitivity_rlap_frenet)
+			DSC_rlap_frenet[ss, tt, ee, hh] = DSC
+    			wDSC_rlap_frenet[ss, tt, ee, hh] = wDSC
+    			J_rlap_frenet[ss, tt, ee, hh] = J
+    			sensitivity_rlap_frenet[ss, tt, ee, hh] = sensitivity
+			np.save('DSC_rlap_frenet_uf25', DSC_rlap_frenet)
+			np.save('wDSC_rlap_frenet_uf25', wDSC_rlap_frenet)
+			np.save('J_rlap_frenet_uf25', J_rlap_frenet)
+			np.save('sensitivity_rlap_frenet_uf25', sensitivity_rlap_frenet)
 		
