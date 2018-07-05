@@ -41,7 +41,6 @@ def ensemble_tractograms(out_filename):
 	print("Ensemble tractogram saved in %s" % out_filename)
 	
 
-
 if __name__ == '__main__':
 
 	np.random.seed(0) 

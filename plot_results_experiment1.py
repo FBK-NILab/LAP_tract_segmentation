@@ -13,9 +13,9 @@ import matplotlib.pyplot as plt
 if __name__ == '__main__':
 
     experiment = 'exp1' 
-    sub_list = ['990366', '991267', '993675', '996782', '992673', '992774', '995174', '983773', '910241', '910443', '911849', '912447', '917255', '917558', '919966']
-    tract_name_list = ['Left_Arcuate', 'Callosum_Forceps_Minor', 'Left_IFOF', 'Left_ILF']
-    partition_list = ['A1', 'A4', 'A8', 'A12', 'A16']
+    sub_list = ['990366', '991267', '993675', '996782', '992673', '992774', '995174', '983773', '910241', '910443', '911849', '912447', '917255', '917558', '919966']#['993675', '995174', '996782', '992673', '992774']
+    tract_name_list = ['Left_Arcuate', 'Callosum_Forceps_Minor', 'Left_IFOF', 'Left_ILF', 'Left_Uncinate', 'Left_Cingulum_Hippocampus' ]#['Left_Arcuate', 'Callosum_Forceps_Minor', 'Left_IFOF', 'Left_ILF']
+    partition_list = ['A1', 'A4', 'A8', 'A16', 'AB32']
     true_tracts_dir = '/N/dc2/projects/lifebid/giulia/data/HCP3_processed_data_trk'
     results_dir = '/N/dc2/projects/lifebid/giulia/results/%s' %experiment
 
@@ -35,7 +35,7 @@ if __name__ == '__main__':
 		estimated_tract = nib.streamlines.load(estimated_tract_filename)
    		estimated_tract = estimated_tract.streamlines	
 
-	    	DSC, TP, vol_A, vol_B = compute_voxel_measures(estimated_tract, true_tract)	
+	    	DSC, wDSC, J, sensitivity, vol_A, vol_B = compute_voxel_measures(estimated_tract, true_tract)	
 	    	print("The DSC value is %s" %DSC)
 	    	DSC_values[s,t,p] = DSC
 
@@ -48,11 +48,11 @@ if __name__ == '__main__':
     # plot
     plt.interactive(True)
     plt.figure()
-    color_list = ['g', 'r', 'y', 'b']
-    markers_list = ['o', '^', '*', 'd']
-    x = [1, 4, 8, 12, 16]
+    color_list = ['g', 'r', 'y', 'b', 'c', 'm']
+    markers_list = ['o', '^', '*', 'd', 'p', '+']
+    x = [1, 4, 8, 16, 32]
     for j in range(len(tract_name_list)):
-	plt.errorbar(x, DSC_values_mean[j,:], yerr=DSC_values_std[j,:], c=color_list[j],  marker=markers_list[j],  label=tract_name_list[j])
+	plt.errorbar(x, DSC_values_mean[j,:], yerr=DSC_values_std[j,:], c=color_list[j],  marker=markers_list[j], ms=10, label=tract_name_list[j])
     plt.xlabel("Number of examples")
     plt.ylabel("DSC")
     plt.title('Mean DSC across %s subjects' %len(sub_list))
