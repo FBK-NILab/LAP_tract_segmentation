@@ -9,6 +9,7 @@ from lap_single_example import compute_kdtree_and_dr_tractogram
 from dissimilarity import compute_dissimilarity, dissimilarity
 from sklearn.neighbors import KDTree
 from sklearn.metrics import roc_auc_score,roc_curve,auc
+import pickle
 
 
 def compute_loss_function(source_tract, ett):
@@ -80,7 +81,7 @@ def streamlines_idx(target_tract, kdt, prototypes, distance_func=bundles_distanc
     D, I = kdt.query(dm_target_tract, k=1)
     if (D > warning_threshold).any():
         print("WARNING (streamlines_idx()): for %s streamlines D > 1.0e-4 !!" % (D > warning_threshold).sum())
-    #print(D)
+    print(D)
     target_tract_idx = I.squeeze()
     return target_tract_idx 
 
@@ -91,6 +92,12 @@ def compute_y_vectors_lap(estimated_tract_idx, estimated_tract_idx_ranked, true_
     """ 
     print("Compute the dissimilarity representation of the target tractogram and build the kd-tree.")
     kdt, prototypes = compute_kdtree_and_dr_tractogram(target_tractogram)
+    
+    #print("ATTENZIONE: SI CONDSIDERANO I PROTOTIPI DEL SUB 991267!")
+    #print("Retrieving past results for kdt and prototypes.")
+    #kdt_filename='991267_kdt'
+    #kdt = pickle.load(open(kdt_filename))
+    #prototypes = np.load('991267_prototypes.npy')
 
     print("Compute a superset of the true target tract with k-NN.")
     superset_idx = compute_superset(true_tract, kdt, prototypes)
@@ -121,6 +128,12 @@ def compute_roc_curve_lap(candidate_idx_ranked, true_tract, target_tractogram):
     """ 
     print("Compute the dissimilarity representation of the target tractogram and build the kd-tree.")
     kdt, prototypes = compute_kdtree_and_dr_tractogram(target_tractogram)
+
+    #print("ATTENZIONE: SI CONDSIDERANO I PROTOTIPI DEL SUB 991267!")
+    #print("Retrieving past results for kdt and prototypes.")
+    #kdt_filename='991267_kdt'
+    #kdt = pickle.load(open(kdt_filename))
+    #prototypes = np.load('991267_prototypes.npy')
 
     print("Retrieving indeces of the true_tract")
     true_tract_idx = streamlines_idx(true_tract, kdt, prototypes)

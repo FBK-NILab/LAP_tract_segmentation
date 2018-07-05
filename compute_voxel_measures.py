@@ -55,7 +55,7 @@ def compute_voxel_measures(estimated_tract, true_tract):
     wDSC = float(sum_int_ET + sum_int_TT) / float(sum_ET + sum_TT)
     J = float(TP) / float(TP + FN + FP)
 
-    return DSC, wDSC, J, sensitivity
+    return DSC, wDSC, J, sensitivity, vol_A, vol_B
 
 
 if __name__ == '__main__':
@@ -82,7 +82,7 @@ if __name__ == '__main__':
             estimated_tract = nib.streamlines.load(estimated_tract_filename)
 	    estimated_tract = estimated_tract.streamlines	
 
-	    DSC, wDSC, J, sensitivity = compute_voxel_measures(estimated_tract, true_tract)	
+	    DSC, wDSC, J, sensitivity, vol_A, vol_B = compute_voxel_measures(estimated_tract, true_tract)	
 	    print("The DSC value is %s" %DSC)
 	    print("The weighted DSC value is %s" %wDSC)
 	    print("The Jaccard index is %s" %J)
@@ -96,12 +96,12 @@ if __name__ == '__main__':
 	    cost_values[t,e] = cost
 
         #debugging
-        DSC, wDSC, J, sensitivity = compute_voxel_measures(estimated_tract, estimated_tract)
+        DSC, wDSC, J, sensitivity, vol_A, vol_B = compute_voxel_measures(estimated_tract, estimated_tract)
         print("The DSC value is %s (must be 1)" %DSC)
 	print("The weighted DSC value is %s (must be 1)" %wDSC)
 	print("The Jaccard index is %s (must be 1)" %J)
 	print("The sensitivity is %s (must be 1)" %sensitivity)
-        DSC, wDSC, J, sensitivity = compute_voxel_measures(true_tract, true_tract)
+        DSC, wDSC, J, sensitivity, vol_A, vol_B = compute_voxel_measures(true_tract, true_tract)
         print("The DSC value is %s (must be 1)" %DSC)
 	print("The weighted DSC value is %s (must be 1)" %wDSC)
 	print("The Jaccard index is %s (must be 1)" %J)
