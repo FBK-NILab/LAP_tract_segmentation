@@ -1,7 +1,7 @@
 import numpy as np
 
 def print_latex_table(matrix2D, column_labels, row_labels):
-	print("\\begin{table}")
+	print("\\begin{table} [h!]")
 	print("\\centering")
 	tmp = ' | '.join('c' * (len(column_labels) + 1))
 	print("\\begin{tabular}{ %s }" % tmp)

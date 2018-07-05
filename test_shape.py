@@ -100,8 +100,10 @@ def frenet_diff(streamlines_A, streamlines_B, nbp=12):
 	Ta,Na,Ba,ka,ta=tm.frenet_serret(sa)
         for j, sb in enumerate(streamlines_B_res):
 	    Tb,Nb,Bb,kb,tb=tm.frenet_serret(sb)
-	    m = np.sum(np.square(ka-kb))
-	    n = np.sum(np.square(ka-np.flip(kb,axis=0)))
+	    #m = np.sum(np.square(ka-kb))
+	    #n = np.sum(np.square(ka-np.flip(kb,axis=0)))
+	    m = np.mean(abs(ka-kb))
+	    n = np.mean(abs(ka-np.flip(kb,axis=0)))
             result[i, j] = min(m,n)
 	#print("Row %s done." %i)
     return result

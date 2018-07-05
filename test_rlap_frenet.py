@@ -117,26 +117,38 @@ if __name__ == '__main__':
 									estimated_bundle_idx, min_cost_values = RLAP(kdt, k, dm_moving_example, moving_example, static_tractogram, distance_func)
 									estimated_bundle = static_tractogram[estimated_bundle_idx]
 									print("Computing the DSC value.")
-									DSC, TP, vol_A, vol_B = compute_voxel_measures(estimated_bundle, true_bundle)	
+									DSC, wDSC, J, sensitivity = compute_voxel_measures(estimated_bundle, true_bundle)	
 									print("The DSC value is %s" %DSC)
+									print("The weighted DSC value is %s" %wDSC)
+	    								print("The Jaccard index is %s" %J)
+	    								print("The sensitivity is %s" %sensitivity)
 									DSC_rlap[ss, b, ms, r, d] = DSC
 								if met == 'rlap_frenet':
 									print("Segmentation as MODIFIED WITH FRENET Rectangular linear Assignment Problem (RLAP).")
-									distance_matrix, frenet_matrix, superset = compute_lap_inputs(kdt, k, dm_moving_example, moving_example, static_tractogram, distance_func)
-									d_matrix_name = 'D_m%s_s%s' %(moving_sub, static_sub)
-									f_matrix_name = 'F_m%s_s%s' %(moving_sub, static_sub)
-									np.save(d_matrix_name, distance_matrix)
-									np.save(f_matrix_name, frenet_matrix)
+									#distance_matrix, frenet_matrix, superset = compute_lap_inputs(kdt, k, dm_moving_example, moving_example, static_tractogram, distance_func)
+									d_matrix_name = 'D_m%s_s%s.npy' %(moving_sub, static_sub)
+									f_matrix_name = 'F_m%s_s%s.npy' %(moving_sub, static_sub)
+									#np.save(d_matrix_name, distance_matrix)
+									#np.save(f_matrix_name, frenet_matrix)
+									distance_matrix = np.load(d_matrix_name)
+									frenet_matrix = np.load(f_matrix_name)
+    									D, I = kdt.query(dm_moving_example, k=k)
+    									superset = np.unique(I.flat)
 
 									#normalize matrices
-									frenet_matrix1=(frenet_matrix-np.min(frenet_matrix))/(np.max(frenet_matrix)-np.min(frenet_matrix))
-									distance_matrix1=(distance_matrix-np.min(distance_matrix))/(np.max(distance_matrix)-np.min(distance_matrix))
+									#frenet_matrix1=(frenet_matrix-np.min(frenet_matrix))/(np.max(frenet_matrix)-np.min(frenet_matrix))
+									#distance_matrix1=(distance_matrix-np.min(distance_matrix))/(np.max(distance_matrix)-np.min(distance_matrix))
+									frenet_matrix1=(frenet_matrix-np.mean(frenet_matrix))/np.std(frenet_matrix)				
+									distance_matrix1=(distance_matrix-np.mean(distance_matrix))/np.std(distance_matrix)
 									for hh, h in enumerate(h_list):
 										estimated_bundle_idx, min_cost_values = RLAP_modified(distance_matrix1, frenet_matrix1, superset, h)
 										estimated_bundle = static_tractogram[estimated_bundle_idx]
 										print("Computing the DSC value.")
-										DSC, TP, vol_A, vol_B = compute_voxel_measures(estimated_bundle, true_bundle)	
+										DSC, wDSC, J, sensitivity = compute_voxel_measures(estimated_bundle, true_bundle)	
 										print("The DSC value with h=%s is %s" %(h,DSC))
+										print("The weighted DSC value is %s" %wDSC)
+	    									print("The Jaccard index is %s" %J)
+	    									print("The sensitivity is %s" %sensitivity)
 										DSC_rlap_frenet[ss, b, ms, r, hh] = DSC
 
 
